@@ -53,24 +53,62 @@ km_fit <- survfit(Surv(time_day,smart_1_normalized) ~ 1, data=df)
 #summary(km_fit, time_day = c(1,30,60,90*(1:10)))
 autoplot(km_fit)
 
+hist(df$smart_2_normalized)
 
 ### Función de SMART Analitic####
-df.smart=df
+#smart 2 no sirve
+# Posee muchisimos Na
+
+
+
+df.smart=copy(df)
+############################
 Colums_df=colnames(df.smart)
 Colums_df
 #length(Colums_df)
 Colums_df=Colums_df[6:21]
 Colums_df=Colums_df[!Colums_df %in% "time_day"]
 
-s=c(Colums_df[1])
-#smart_1_normalized
-D=quantile(df.smart$smart_1_normalized, prob=c(0,0.25,0.5,0.75,1))
+###########################################
 
-df.smart$Quarter <- cut(df.smart$smart_1_normalized, breaks = D, 
+
+i=Colums_df[3]
+
+X=df.smart[,..i]
+
+X=lapply(X, function(x) ifelse(is.na(x),0,x ) )
+hist(X[[i]])
+
+D=quantile(X[[i]], prob=c(0,0.25,0.5,0.75,1))
+
+
+
+df.smart$Quarter <- cut(X[[i]] , breaks = D, 
                      labels = c('0.25','0.5','0.75','1'), right = FALSE)
 
 
 km_fit <- survfit(Surv(time_day) ~ as.factor(Quarter), data=df.smart)
+
 #summary(km_fit, time_day = c(1,30,60,90*(1:10)))
 autoplot(km_fit)
+#smart 2 no sirve lo anterior
+
+                
+# tiene muchos Na.
+
+
+###Visualizar cuanstos Na tiene cada columna####
+
+j=Colums_df[2]
+
+Y=df.smart[,..j]
+sum(sapply(Y[[j]], function(x) ifelse(is.na(x),1,0 ) ))
+
+Y[[j]]=sapply(Y[[j]], function(x) ifelse(is.na(x),0,1 ) )
+length(Y)
+sum(Q)
+
+Q=Y[is.na(x) ,  ]
+
+
 
