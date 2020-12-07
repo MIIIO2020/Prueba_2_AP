@@ -176,23 +176,21 @@ Colums_df
 
 
 ### KM smart_1_normalized ####
+
 i='smart_1_normalized'
 
 
 X=(df.smart[,..i])
 
-Y=as.numeric(X[[i]])
-sd(X[[i]])
-mean(X[[i]])
-#sd(X)
-
-X=lapply(X, function(x) ifelse(is.na(x),mean(X[[i]]),x ) )
 hist(X[[i]])
 
 D=quantile(X[[i]], prob=c(0,0.25,0.5,0.75,1))
-label.Q=c('0.25','0.5','0.75','1')
-D[5]<-1+D[5]
+l=length(D[])
+for (i in c(2:l)) {
+  D[i]<-0.00001+D[i]
+}
 D
+
 
 df.smart$smart_1_normalized_Q <- cut(X[[i]] , breaks = D, 
                      labels = c('0.25','0.5','0.75','1'), right = FALSE)
@@ -204,71 +202,43 @@ km_fit <- survfit(Surv(time_day) ~ as.factor(smart_1_normalized_Q), data=df.smar
 
 autoplot(km_fit)
 
-survdiff(Surv(time_day) ~ as.factor(smart_1_normalized), data=df.smart)
+survdiff(Surv(time_day) ~ as.factor(smart_1_normalized), data=df.smart,rho = 1)
 
 #_____________________________________________________________________________________
 
-### smart 3####
+
+km_fit <- survfit(Surv(time_day) ~ as.factor(smart_1_normalized_Q), data=df.smart)
+
+#summary(km_fit, time_day = c(1,30,60,90*(1:10)))
+
+autoplot(km_fit)
 
 
-i=Colums_df[5]
+
+### smart 3 i->2####
+
+i=Colums_df[2]
+i
 #i='smart_3_normalized'
 
 X=(df.smart[[i]])
-X
 length(X)
-sd(X)
-
 Y= X[!is.na(X)]
-#sd(X)
-
+length(Y)
 X=sapply(X, function(x) ifelse(is.na(x),mean(Y),x ) )
-
 hist(X)
 
-
-
-### D for ####
-
-Z=c(1,1,1,1,1,1)
-
-
-D=quantile(Z, prob=c(0,0.33,0.66,1))
-D=quantile(Z, prob=c(0,0.5,1))
-D
-D.label=c('0.25','0.5','0.75','1')
-D[5]<-1+D[5]
-
-
-sum(X==100)
-
-length(X)
-
+D=quantile(X, prob=c(0,0.25,0.5,0.75,1))
 l=length(D[])
-D_2=D[[1]]
+for (i in c(2:l)) {
+  D[i]<-0.00001+D[i]
+}
+D
 
 
-lab_order<-2
-start_D=2
-  for(i in c(2:l-1)){
-    print(i)
-    if(D[[start_D]]==D[[i]]){
-      print("start",i)
-      
-    }else{
-      
-      start_D=i
-      lab_order=c(lab_order,i-1)
-      cat("end",(i))
-      }#else
-  }
-  print(lab_order)
-  print(D[[1]])
-
-
-#smart[[i]]
-  df.smart$Qartere <- cut(X , breaks = D, 
-                                   labels = c('0.25','0.5','0.75','1'), right = FALSE)
+df.smart$Qartere <- cut(X , breaks = D, 
+                    labels = c('0.25','0.5','0.75','1')
+                    , right = FALSE)
 
 
 km_fit <- survfit(Surv(time_day) ~ as.factor(Qartere), data=df.smart)
@@ -279,5 +249,244 @@ autoplot(km_fit)
 
 survdiff(Surv(time_day) ~ as.factor(smart_1_normalized), data=df.smart)
 
+### smart 5 i->3####
+
+i=Colums_df[3]
+i
+#i='smart_5_normalized'
+
+X=(df.smart[[i]])
+length(X)
+Y= X[!is.na(X)]
+length(Y)
+X=sapply(X, function(x) ifelse(is.na(x),mean(Y),x ) )
+hist(X)
+
+D=quantile(X, prob=c(0,0.75,1))
+l=length(D[])
+for (i in c(2:l)) {
+  D[i]<-0.00001+D[i]
+}
+D
 
 
+df.smart$Qartere <- cut(X , breaks = D, 
+                        labels = c('0.75','1')
+                        , right = FALSE)
+
+
+km_fit <- survfit(Surv(time_day) ~ as.factor(Qartere), data=df.smart)
+#summary(km_fit, time_day = c(1,30,60,90*(1:10)))
+
+autoplot(km_fit)
+
+survdiff(Surv(time_day) ~ as.factor(Qartere), data=df.smart, rho = 1)
+
+
+### smart 7 i->4####
+
+i=Colums_df[4]
+i
+#i='smart_5_normalized'
+X=(df.smart[[i]])
+length(X)
+Y= X[!is.na(X)]
+length(Y)
+X=sapply(X, function(x) ifelse(is.na(x),mean(Y),x ) )
+hist(X)
+
+D=quantile(X, prob=c(0,0.25,0.75,1))
+l=length(D[])
+for (i in c(2:l)) {
+  D[i]<-0.00001+D[i]
+}
+D
+
+
+#etiquetamos la particion
+df.smart$Qartere <- cut(X , breaks = D, 
+                        labels = c('0.25','0.75','1')
+                        , right = FALSE)
+
+
+  km_fit <- survfit(Surv(time_day) ~ as.factor(Qartere), data=df.smart)
+#summary(km_fit, time_day = c(1,30,60,90*(1:10)))
+
+autoplot(km_fit)
+
+survdiff(Surv(time_day) ~ as.factor(Qartere), data=df.smart, rho = 1)
+
+### smart 192 i->5####
+
+
+i=Colums_df[5]
+i
+
+X=(df.smart[[i]])
+length(X)
+Y= X[!is.na(X)]
+length(Y)
+X=sapply(X, function(x) ifelse(is.na(x),mean(Y),x ) )
+hist(X)
+
+D=quantile(X, prob=c(0,0.75,1))
+l=length(D[])
+for (i in c(2:l)) {
+  D[i]<-0.00001+D[i]
+}
+D
+
+
+#etiquetamos la particion
+df.smart$Qartere <- cut(X , breaks = D, 
+                        labels = c('0.75','1')
+                        , right = FALSE)
+
+
+km_fit <- survfit(Surv(time_day) ~ as.factor(Qartere), data=df.smart)
+#summary(km_fit, time_day = c(1,30,60,90*(1:10)))
+
+autoplot(km_fit)
+
+survdiff(Surv(time_day) ~ as.factor(Qartere), data=df.smart, rho = 1)
+
+
+
+### smart 193 i->6####
+
+
+i=Colums_df[6]
+i
+
+X=(df.smart[[i]])
+length(X)
+Y= X[!is.na(X)]
+length(Y)
+X=sapply(X, function(x) ifelse(is.na(x),mean(Y),x ) )
+hist(X)
+
+D=quantile(X, prob=c(0,0.25,0.75,1))
+l=length(D[])
+for (i in c(2:l)) {
+  D[i]<-0.00001+D[i]
+}
+D
+
+
+#etiquetamos la particion
+df.smart$Qartere <- cut(X , breaks = D, 
+                        labels = c('0.25','0.75','1')
+                        , right = FALSE)
+
+
+km_fit <- survfit(Surv(time_day) ~ as.factor(Qartere), data=df.smart)
+#summary(km_fit, time_day = c(1,30,60,90*(1:10)))
+
+autoplot(km_fit)
+
+survdiff(Surv(time_day) ~ as.factor(Qartere), data=df.smart, rho = 1)
+
+
+### smart 194 i->7####
+
+
+i=Colums_df[7]
+i
+
+X=(df.smart[[i]])
+length(X)
+Y= X[!is.na(X)]
+length(Y)
+X=sapply(X, function(x) ifelse(is.na(x),mean(Y),x ) )
+hist(X)
+
+D=quantile(X, prob=c(0,0.25,0.75,1))
+l=length(D[])
+for (i in c(2:l)) {
+  D[i]<-0.00001+D[i]
+}
+D
+
+
+#etiquetamos la particion
+df.smart$Qartere <- cut(X , breaks = D, 
+                        labels = c('0.25','0.75','1')
+                        , right = FALSE)
+
+
+km_fit <- survfit(Surv(time_day) ~ as.factor(Qartere), data=df.smart)
+#summary(km_fit, time_day = c(1,30,60,90*(1:10)))
+
+autoplot(km_fit)
+
+survdiff(Surv(time_day) ~ as.factor(Qartere), data=df.smart, rho = 1)
+
+### smart 197 i->8####
+
+
+i=Colums_df[8]
+i
+
+X=(df.smart[[i]])
+length(X)
+Y= X[!is.na(X)]
+length(Y)
+X=sapply(X, function(x) ifelse(is.na(x),mean(Y),x ) )
+hist(X)
+
+D=quantile(X, prob=c(0,0.75,1))
+l=length(D[])
+for (i in c(2:l)) {
+  D[i]<-0.00001+D[i]
+}
+D
+
+
+#etiquetamos la particion
+df.smart$Qartere <- cut(X , breaks = D, 
+                        labels = c('0.75','1')
+                        , right = FALSE)
+
+
+km_fit <- survfit(Surv(time_day) ~ as.factor(Qartere), data=df.smart)
+#summary(km_fit, time_day = c(1,30,60,90*(1:10)))
+
+autoplot(km_fit)
+
+survdiff(Surv(time_day) ~ as.factor(Qartere), data=df.smart, rho = 1)
+
+
+
+### smart 198 i->9####
+
+
+i=Colums_df[9]
+i
+
+X=(df.smart[[i]])
+length(X)
+Y= X[!is.na(X)]
+length(Y)
+X=sapply(X, function(x) ifelse(is.na(x),mean(Y),x ) )
+hist(X)
+
+D=quantile(X, prob=c(0,0.25,0.75,1))
+l=length(D[])
+for (i in c(2:l)) {
+  D[i]<-0.00001+D[i]
+}
+D
+
+
+#etiquetamos la particion
+df.smart$Qartere <- cut(X , breaks = D, 
+                        labels = c('0.75','1')
+                        , right = FALSE)
+
+
+km_fit <- survfit(Surv(time_day) ~ as.factor(Qartere), data=df.smart)
+#summary(km_fit, time_day = c(1,30,60,90*(1:10)))
+
+autoplot(km_fit)
+
+survdiff(Surv(time_day) ~ as.factor(Qartere), data=df.smart, rho = 1)
