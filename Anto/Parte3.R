@@ -7,7 +7,8 @@ library(dplyr)
 library(ggfortify)
 
 #data
-data<-fread("/Users/antoniaindaorlandi/Desktop/Análisis Predictivo/Prueba 2/data_model.csv")
+data<-fread("/Users/antoniaindaorlandi/Desktop/Análisis Predictivo/Prueba 2/data_fact_smart.csv")
+data<-rename(data,model=model_Bin)
 
 #Parte III a
 #Modelo exponencial 
@@ -35,6 +36,7 @@ cat("El modelo que mejor se adapta a los datos es: ", ifelse (Verosimilitud_exp>
 
 
 #smart_1_normalized (0.5 , 0.75 , 1)
+#Cuartil de referencia …
 
 
 #smart_3_normalized ()

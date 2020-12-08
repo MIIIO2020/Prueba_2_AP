@@ -6,7 +6,7 @@ library(dplyr)
 library(ggfortify)
 
 #Lectura de datos
-data = fread("/Users/antoniaindaorlandi/Desktop/Análisis Predictivo/Prueba 2/data_model.csv")
+data<-fread("/Users/antoniaindaorlandi/Desktop/Análisis Predictivo/Prueba 2/data_fact_smart.csv")
 
 
 #Parte II a
