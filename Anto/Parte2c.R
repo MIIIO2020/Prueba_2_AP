@@ -5,14 +5,71 @@ library(ggplot2)
 library(dplyr)
 library(ggfortify)
 
+#Lectura de datos
 data = fread("/Users/antoniaindaorlandi/Desktop/Análisis Predictivo/Prueba 2/data_model.csv")
 
-#Estimación de la función de sobrevivencia vía Kaplan-Meier
-km_1 <- survfit(Surv(time_day)~as.factor(smart_1_normalized), data=data)
+
+#Parte II a
+#Análisis bivariado con el tiempo de vida
+#Función de sobrevivencia vía Kaplan-Meier
+
+#model
 km_m <- survfit(Surv(time_day)~ as.factor(model), data=data)
 
-autoplot(km_1)
 autoplot(km_m)
+
+#smart_1_normalized
+km_1 <- survfit(Surv(time_day)~as.factor(smart_1_normalized), data=data)
+
+autoplot(km_1)
+
+#smart_3_normalized
+km_3 <- survfit(Surv(time_day)~as.factor(smart_3_normalized), data=data)
+
+autoplot(km_3)
+
+#smart_5_normalized
+km_5 <- survfit(Surv(time_day)~as.factor(smart_5_normalized), data=data)
+
+autoplot(km_5)
+
+#smart_7_normalized
+km_7 <- survfit(Surv(time_day)~as.factor(smart_7_normalized), data=data)
+
+autoplot(km_7)
+
+#smart_192_normalized
+km_192 <- survfit(Surv(time_day)~as.factor(smart_192_normalized), data=data)
+
+autoplot(km_192)
+
+#smart_193_normalized
+km_193 <- survfit(Surv(time_day)~as.factor(smart_193_normalized), data=data)
+
+autoplot(km_193)
+
+#smart_194_normalized
+km_194 <- survfit(Surv(time_day)~as.factor(smart_194_normalized), data=data)
+
+autoplot(km_194)
+
+#smart_197_normalized
+km_197 <- survfit(Surv(time_day)~as.factor(smart_197_normalized), data=data)
+
+autoplot(km_197)
+
+#smart_198_normalized
+km_198 <- survfit(Surv(time_day)~as.factor(smart_198_normalized), data=data)
+
+autoplot(km_198)
+
+
+#Parte II b
+#Test de comparación entre curvas
+#Test Log-rank: para detectar diferencias al final de la curva (compara curvas de dos grupos… buscar test génerico para más de dos curvas)
+#Test de Wilcoxon: para detectar diferencias al inicio de la curva
+
+#Parte II c
 #Inspección gráfica del supuesto de riesgos proporcionales
 #Método 1: log{-log(S)} vs log(t)
 plot(km_1, col=c("black", "red"), fun="cloglog")
