@@ -10,7 +10,7 @@ library(ggfortify)
 data<-fread("/Users/antoniaindaorlandi/Desktop/Análisis Predictivo/Prueba 2/data_fact_smart.csv")
 data<-rename(data,model=model_Bin)
 
-#Parte III a
+### Parte III a ####
 #Modelo exponencial 
 modelo_exp<-survreg(Surv(time_day) ~ as.factor(model) + as.factor(smart_1_normalized) + as.factor(smart_3_normalized) + as.factor(smart_5_normalized) + as.factor(smart_7_normalized) + as.factor(smart_192_normalized) + as.factor(smart_193_normalized) + as.factor(smart_194_normalized) + as.factor(smart_197_normalized) + as.factor(smart_198_normalized), data, dist='exponential') #Después de la "colita de chancho" agregar todas las variables…
 modelo_exp
@@ -22,6 +22,19 @@ modelo_wei<-survreg(Surv(time_day) ~ as.factor(model) + as.factor(smart_1_normal
 modelo_wei
 Verosimilitud_wei<-logLik(modelo_wei)
 
+g<-modelo_wei$scale
+n=205
+t=data$time_day
+T=sapply(t, function(x) ifelse(is.na(x),0,x^g ) )
+lambda=(n/sum(T))^(1/g)
+lambda
+
+S=exp(-(lambda*t)^g)
+S
+plot(t,S)
+
+km <- survfit(Surv(time_day)~ 1, data=data)
+autoplot(km)
 
 #Para comparar cuál es el mejor modelo: analizar la verosimilitud
 #LogLikelihood…
@@ -64,7 +77,7 @@ cat("El modelo que mejor se adapta a los datos es: ", ifelse (Verosimilitud_exp>
 
 
 
-#Parte III b
+### Parte III b ####
 #Modelo Lognormal
 modelo_logn<-survreg(Surv(time_day) ~ as.factor(model) + as.factor(smart_1_normalized) + as.factor(smart_3_normalized) + as.factor(smart_5_normalized) + as.factor(smart_7_normalized) + as.factor(smart_192_normalized) + as.factor(smart_193_normalized) + as.factor(smart_194_normalized) + as.factor(smart_197_normalized) + as.factor(smart_198_normalized), data, dist='lognormal') #Después de la "colita de chancho" agregar todas las variables…
 modelo_logn
@@ -77,9 +90,6 @@ modelo_gamma<-flexsurvreg(Surv(time_day)~as.factor(model) + as.factor(smart_1_no
 modelo_gamma
 Verosimilitud_gamma<-logLik(modelo_gamma)
 
-autoplot(modelo_gamma)
-plot(modelo_gamma)
-
 
 #Para comparar cuál es el mejor modelo: analizar la verosimilitud
 #LogLikelihood…
@@ -91,7 +101,7 @@ Modelos=c("Exponencial","Weibull","Lognormal","Gamma")
 Indice=which.max(Verosimilitud)
 cat("El modelo que mejor se adapta a los datos es el: ",Modelos[Indice],"\n", "Con una verosimilitud de ",Verosimilitud[Indice])
 
-#Parte III c
+### Parte III c ####
 #Insertar modelo Kaplan-Meier:
 
 
