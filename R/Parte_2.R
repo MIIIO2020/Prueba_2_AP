@@ -52,12 +52,10 @@ NAs = NAs[which(NAs$Count_NAs != 0 & NAs$Feature != "time_days"),]
 ggplot(NAs, aes(x=reorder(Feature,Count_NAs), y=Count_NAs)) +
   geom_bar(stat="identity") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
+rm(NAs)
 # smart 2 no sirve
 # Posee muchisimos Na Por lo cual 
 #eliminamos todos los smart con muchos Na
-
-
 
 
 #Se encontraron variables SMART con muchisimos Na,
@@ -100,10 +98,10 @@ df$serial_number=NULL
 
 #S(t) general
 km_fit <- survfit(Surv(time_day) ~ 1, data=df)
-s=summary(km_fit, time_day = c(1,30,60,90*(1:10)))
+summary(km_fit, time_day = c(1,30,60,90*(1:10)))
 autoplot(km_fit)
 
-
+rm(km_fit)
 
 
 ### KM-Model####
@@ -123,39 +121,49 @@ model_df <- mutate(df, model_F = ifelse((model == 'ST4000DM000'), "ST40000DM000"
               model = factor(model_F),
               time_day = time_day)
 
-df$model=model_df$model
+df$model_Bin=model_df$model
 
-km_model <- survfit(Surv(time_day) ~ as.factor(model), data=df)
+rm(model_df)
+
+km_model <- survfit(Surv(time_day) ~ as.factor(model_Bin), data=df)
 #summary(km_fit, time_day = c(1,30,60,90*(1:10)))
 
 autoplot(km_model)
-
 summary(km_model, times = c(1,30,60,90*(1:10)))
 
 
 #Vewmos segun LogRank si las curvas son dif en el final
-
 #With rho = 0 this is the log-rank 
-log_rang=survdiff(Surv(time_day) ~ as.factor(model_F) , model_df)
-
-pchisq(log_rang$chisq, length(log_rang$n)-1, lower.tail = FALSE)
+log_rang=survdiff(Surv(time_day) ~ as.factor(model_Bin) , df)
+log_rang=pchisq(log_rang$chisq, length(log_rang$n)-1, lower.tail = FALSE)
 
 
 
 #with rho = 1 it is equivalent to the Peto & Peto
 #modification of the Gehan-Wilcoxon test.
-Peto_test=survdiff(Surv(time_day) ~ as.factor(model_F) , model_df, rho = 1)
+Peto_test=survdiff(Surv(time_day) ~ as.factor(model_Bin) , df, rho = 1)
+Peto_test=pchisq(Peto_test$chisq, length(Peto_test$n)-1, lower.tail = FALSE)
 
-pchisq(Peto_test$chisq, length(Peto_test$n)-1, lower.tail = FALSE)
+ 
+cat("log_rang P-value: ",log_rang
+    ,ifelse(log_rang<0.05,
+            " Hay evidencia para rechazar Ho",
+            " Se conserva Ho") )
 
+cat('Peto_test P-value: ', Peto_test
+    ,ifelse(Peto_test<0.05,
+            " Hay evidencia para rechazar Ho",
+            " Se conserva Ho") )
 
+survreg(Surv(time_day) ~ as.factor(model_Bin) , df, dist='exponential')
 
+exp(-0.7309016)
 ### Curvas de KM smart####
 
   #Creamos una copia para ajustar una a 
   #una las var smart sin afectar a df
   df.smart=copy(df)
-
+  df.smart$model=NULL
 
 
 ### Recogemos las columnas smart ####
@@ -163,7 +171,7 @@ pchisq(Peto_test$chisq, length(Peto_test$n)-1, lower.tail = FALSE)
   #variado de forma automatica
 
 Colums_df=colnames(df.smart)
-Colums_df
+Colums_df<
 l=length(Colums_df)
 
 Colums_df=Colums_df[ 2:l ]
@@ -186,8 +194,8 @@ hist(X[[i]])
 
 D=quantile(X[[i]], prob=c(0,0.25,0.5,0.75,1))
 l=length(D[])
-for (i in c(2:l)) {
-  D[i]<-0.00001+D[i]
+for (j in c(2:l)) {
+  D[j]<-0.00001+D[j]
 }
 D
 
@@ -207,11 +215,12 @@ survdiff(Surv(time_day) ~ as.factor(smart_1_normalized), data=df.smart,rho = 1)
 #_____________________________________________________________________________________
 
 
-km_fit <- survfit(Surv(time_day) ~ as.factor(smart_1_normalized_Q), data=df.smart)
 
-#summary(km_fit, time_day = c(1,30,60,90*(1:10)))
-
-autoplot(km_fit)
+# km_fit <- survfit(Surv(time_day,model!='other') ~ as.factor(smart_1_normalized_Q), data=df.smart)
+# #as.factor(smart_1_normalized_Q)
+# #summary(km_fit, time_day = c(1,30,60,90*(1:10)))
+# 
+# autoplot(km_fit)
 
 
 
@@ -247,7 +256,7 @@ km_fit <- survfit(Surv(time_day) ~ as.factor(Qartere), data=df.smart)
 
 autoplot(km_fit)
 
-survdiff(Surv(time_day) ~ as.factor(smart_1_normalized), data=df.smart)
+survdiff(Surv(time_day) ~ as.factor(smart_1_normalized_Q), data=df.smart)
 
 ### smart 5 i->3####
 
@@ -282,6 +291,10 @@ autoplot(km_fit)
 
 survdiff(Surv(time_day) ~ as.factor(Qartere), data=df.smart, rho = 1)
 
+
+survreg(Surv(time_day) ~  smart_5_normalized , df, dist='exponential')
+
+exp(0.002491316)
 
 ### smart 7 i->4####
 
