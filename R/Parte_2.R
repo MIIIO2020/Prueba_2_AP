@@ -256,7 +256,20 @@ km_fit <- survfit(Surv(time_day) ~ as.factor(Qartere), data=df.smart)
 
 autoplot(km_fit)
 
-survdiff(Surv(time_day) ~ as.factor(smart_1_normalized_Q), data=df.smart)
+#survdiff(Surv(time_day) ~ as.factor(smart_1_normalized_Q), data=df.smart)
+
+
+
+survreg(Surv(time_day) ~ as.factor(Qartere) , df.smart, dist='exponential')
+
+exp(-0.5466061)+exp(-0.3250286)+
+  
+  exp(0.6194902)
+
+
+
+
+
 
 ### smart 5 i->3####
 
