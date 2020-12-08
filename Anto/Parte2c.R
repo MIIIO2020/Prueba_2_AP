@@ -7,9 +7,10 @@ library(ggfortify)
 
 #Lectura de datos
 data<-fread("/Users/antoniaindaorlandi/Desktop/Análisis Predictivo/Prueba 2/data_fact_smart.csv")
+data<-rename(data,model=model_Bin)
 
 
-#Parte II a
+### Parte II a ####
 #Análisis bivariado con el tiempo de vida
 #Función de sobrevivencia vía Kaplan-Meier
 
@@ -64,15 +65,23 @@ km_198 <- survfit(Surv(time_day)~as.factor(smart_198_normalized), data=data)
 autoplot(km_198)
 
 
-#Parte II b
+### Parte II b ####
 #Test de comparación entre curvas
 #Test Log-rank: para detectar diferencias al final de la curva (compara curvas de dos grupos… buscar test génerico para más de dos curvas)
 #Test de Wilcoxon: para detectar diferencias al inicio de la curva
 
-#Parte II c
+### Parte II c ####
 #Inspección gráfica del supuesto de riesgos proporcionales
 #Método 1: log{-log(S)} vs log(t)
 plot(km_1, col=c("black", "red"), fun="cloglog")
+plot(km_3, col=c("black", "red"), fun="cloglog")
+plot(km_5, col=c("black", "red"), fun="cloglog")
+plot(km_7, col=c("black", "red"), fun="cloglog")
+plot(km_192, col=c("black", "red"), fun="cloglog")
+plot(km_193, col=c("black", "red"), fun="cloglog")
+plot(km_194, col=c("black", "red"), fun="cloglog")
+plot(km_197, col=c("black", "red"), fun="cloglog")
+plot(km_198, col=c("black", "red"), fun="cloglog")
 plot(km_m, col=c("black", "red"), fun="cloglog")
 
 #Método 2: log(HR) vs t       HR: riesgo relativo
