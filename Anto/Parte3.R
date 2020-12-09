@@ -5,9 +5,11 @@ library(flexsurv)
 library(ggplot2)
 library(dplyr)
 library(ggfortify)
+library(rms)
+library(Hmisc)
 
 #data
-data<-fread("/Users/antoniaindaorlandi/Desktop/Análisis Predictivo/Prueba 2/data_fact_smart.csv")
+data<-fread("data_fact_smart.csv")
 data<-rename(data,model=model_Bin)
 
 ### Parte III a ####
@@ -137,18 +139,55 @@ autoplot(km)
 #modelo_cox<-step(null, scope = list(upper=full), data=model_data, direction="both")
 #summary(modelo_cox)
 
+### Graficas de KM####
+# # Alternatively we can fully specify the plot in each layer. This
+# # is not useful here, but can be more clear when working with complex
+# # mult-dataset graphics
+# ggplot() +
+#   geom_point(data = df, aes(gp, y)) +
+#   geom_point(data = ds, aes(gp, mean), colour = 'red', size = 3) +
+#   geom_errorbar(
+#     data = ds,
+#     aes(gp, mean, ymin = mean - sd, ymax = mean + sd),
+#     colour = 'red',
+#     width = 0.4
+#   )
 
 
 ## Kaplan-Meier estimator without grouping
-#km.null <- survfit(data = lung, SurvObj ~ 1)
-survplot(km, conf = "none")
+#km.null <- survfit(data = data, time_day ~ 1)
+s <- with(data,Surv(time_day))
+
+km <-survfit(data=data,s~ 1)
+
+
+
+#survplot(km)
+
 
 ## Overplot estimation from Cox regression by Efron method
 cox <- coxph(Surv(time_day)~as.factor(model) + as.factor(smart_1_normalized) + as.factor(smart_3_normalized) + as.factor(smart_5_normalized) + as.factor(smart_7_normalized) + as.factor(smart_192_normalized) + as.factor(smart_193_normalized) + as.factor(smart_194_normalized) + as.factor(smart_197_normalized) + as.factor(smart_198_normalized),data = data)
-lines(survfit(cox), col = "green", mark.time = FALSE)
+S_cox=survfit(cox)
+ggplot(S_cox,aes(S_cox$time,S_cox$surv), col = "green")+geom_line()
 
 ## Parametric estimation with Weibull distribution
 #weibull.null <- survreg(data = lung, SurvObj ~ 1, dist = "weibull")
+
+s_w=Surv(predict(modelo_wei))
+
+# P_m
+#
+
+S_wei=survfit(data=data,s_w~ 1)
+
+data$predict_modelo_wei<-predict(modelo_wei)
+
+# D_wei=cbind( predict(modelo_wei, type = "quantile", p = seq(0.0001, 0.99, by=.01))[1,],
+#              rev(seq(0.0001, 0.99, by = 0.01)))
+# 
+# D_wei=cbind( predict(modelo_wei),
+#              rev(seq(0.01, 0.99, by = 0.01)))
+
 lines(x = predict(modelo_wei, type = "quantile", p = seq(0.01, 0.99, by=.01))[1,],
       y = rev(seq(0.01, 0.99, by = 0.01)),
       col = "red")
@@ -160,9 +199,27 @@ lines(x = predict(modelo_logn, type = "quantile", p = seq(0.01, 0.99, by=.01))[1
       col = "blue")
 
 ## Add legends
-legend(x = "topright",
-       legend = c("Kaplan-Meier", "Cox", "Weibull", "Log normal"),
-       lwd = 2, bty = "n",
-       col = c("black", "green", "red", "blue"))
+legenda = c("Kaplan_Meier", "Cox", "Weibull")#, "Log normal"
+colores = c("blue", "green", "red")#, "blue"
+
+ggplot(km)+
+    geom_step(aes(km$time,km$surv,colour = "Kaplan_Meier"))+
+    geom_line(data = S_cox, aes(S_cox$time,S_cox$surv
+              ,colour = "Cox"))+
+    geom_line(data=S_wei,aes(x = S_wei$time,
+               y = S_wei$surv,colour = "Weibull" ))+
+  scale_colour_manual("", 
+                      breaks = legenda,
+                      values =colores) +
+  xlab("Tiempo en dias") +
+  scale_y_continuous("Survival Probabiliti", limits = c(0,1)) + 
+  labs(title="TITULO")
+  
+  
+  
+# legend(x = "topright",
+#        legend = c("Kaplan-Meier", "Cox", "Weibull", "Log normal"),
+#        lwd = 2, bty = "n",
+#        col = c("black", "green", "red", "blue"))
 
 
