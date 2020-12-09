@@ -145,23 +145,23 @@ survplot(km, conf = "none")
 
 ## Overplot estimation from Cox regression by Efron method
 cox <- coxph(Surv(time_day)~as.factor(model) + as.factor(smart_1_normalized) + as.factor(smart_3_normalized) + as.factor(smart_5_normalized) + as.factor(smart_7_normalized) + as.factor(smart_192_normalized) + as.factor(smart_193_normalized) + as.factor(smart_194_normalized) + as.factor(smart_197_normalized) + as.factor(smart_198_normalized),data = data)
-lines(survfit(cox.null), col = "green", mark.time = FALSE)
+lines(survfit(cox), col = "green", mark.time = FALSE)
 
 ## Parametric estimation with Weibull distribution
-weibull.null <- survreg(data = lung, SurvObj ~ 1, dist = "weibull")
-lines(x = predict(weibull.null, type = "quantile", p = seq(0.01, 0.99, by=.01))[1,],
+#weibull.null <- survreg(data = lung, SurvObj ~ 1, dist = "weibull")
+lines(x = predict(modelo_wei, type = "quantile", p = seq(0.01, 0.99, by=.01))[1,],
       y = rev(seq(0.01, 0.99, by = 0.01)),
       col = "red")
 
 ## Parametric estimation with log-logistic distribution
-loglogistic.null <- survreg(data = lung, SurvObj ~ 1, dist = "loglogistic")
-lines(x = predict(loglogistic.null, type = "quantile", p = seq(0.01, 0.99, by=.01))[1,],
+#loglogistic.null <- survreg(data = lung, SurvObj ~ 1, dist = "loglogistic")
+lines(x = predict(modelo_logn, type = "quantile", p = seq(0.01, 0.99, by=.01))[1,],
       y = rev(seq(0.01, 0.99, by = 0.01)),
       col = "blue")
 
 ## Add legends
 legend(x = "topright",
-       legend = c("Kaplan-Meier", "Cox (Efron)", "Weibull", "Log-logistic"),
+       legend = c("Kaplan-Meier", "Cox", "Weibull", "Log normal"),
        lwd = 2, bty = "n",
        col = c("black", "green", "red", "blue"))
 
