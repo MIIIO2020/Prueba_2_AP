@@ -22,19 +22,6 @@ modelo_wei<-survreg(Surv(time_day) ~ as.factor(model) + as.factor(smart_1_normal
 modelo_wei
 Verosimilitud_wei<-logLik(modelo_wei)
 
-g<-modelo_wei$scale
-n=205
-t=data$time_day
-T=sapply(t, function(x) ifelse(is.na(x),0,x^g ) )
-lambda=(n/sum(T))^(1/g)
-lambda
-
-S=exp(-(lambda*t)^g)
-S
-plot(t,S)
-
-km <- survfit(Surv(time_day)~ 1, data=data)
-autoplot(km)
 
 #Para comparar cuál es el mejor modelo: analizar la verosimilitud
 #LogLikelihood…
@@ -52,13 +39,13 @@ cat("El modelo que mejor se adapta a los datos es: ", ifelse (Verosimilitud_exp>
 #Cuartil de referencia …
 
 
-#smart_3_normalized ()
+#smart_3_normalized (0.25 , 0.5 , 0.75 , 1)
 
 
-#smart_5_normalized
+#smart_5_normalized (0.25 , 0.5 , 0.75 , 1)
 
 
-#smart_7_normalized
+#smart_7_normalized (0.25 , 0.75 , 1)
 
 
 #smart_192_normalized
@@ -103,9 +90,28 @@ cat("El modelo que mejor se adapta a los datos es el: ",Modelos[Indice],"\n", "C
 
 ### Parte III c ####
 #Insertar modelo Kaplan-Meier:
+km <- survfit(Surv(time_day)~ 1, data=data)
+autoplot(km)
 
 
 #Modelo seleccionado entre las partes a y b:
+### Generación de S(t) de weibull ####
+g<-modelo_wei$scale
+n=205
+t=data$time_day
+T=sapply(t, function(x) ifelse(is.na(x),0,x^g ) )
+lambda=(n/sum(T))^(1/g)
+
+S=exp(-(lambda*t)^g)
+plot(t,S)
+
+data_S=data.frame()
+data_S$S<-S
+data_S<-cbind(S,t)
+
+par(mfrow=c(2,1))
+ggplot(data=data_S,aes(t,S))+geom_step()
+autoplot(km)
 
 
 #Test general de comparación (entre curvas de sobrevivencia):
@@ -130,5 +136,33 @@ cat("El modelo que mejor se adapta a los datos es el: ",Modelos[Indice],"\n", "C
 #null<-lm(time_day~1, data=data)
 #modelo_cox<-step(null, scope = list(upper=full), data=model_data, direction="both")
 #summary(modelo_cox)
+
+
+
+## Kaplan-Meier estimator without grouping
+#km.null <- survfit(data = lung, SurvObj ~ 1)
+survplot(km, conf = "none")
+
+## Overplot estimation from Cox regression by Efron method
+cox <- coxph(Surv(time_day)~as.factor(model) + as.factor(smart_1_normalized) + as.factor(smart_3_normalized) + as.factor(smart_5_normalized) + as.factor(smart_7_normalized) + as.factor(smart_192_normalized) + as.factor(smart_193_normalized) + as.factor(smart_194_normalized) + as.factor(smart_197_normalized) + as.factor(smart_198_normalized),data = data)
+lines(survfit(cox.null), col = "green", mark.time = FALSE)
+
+## Parametric estimation with Weibull distribution
+weibull.null <- survreg(data = lung, SurvObj ~ 1, dist = "weibull")
+lines(x = predict(weibull.null, type = "quantile", p = seq(0.01, 0.99, by=.01))[1,],
+      y = rev(seq(0.01, 0.99, by = 0.01)),
+      col = "red")
+
+## Parametric estimation with log-logistic distribution
+loglogistic.null <- survreg(data = lung, SurvObj ~ 1, dist = "loglogistic")
+lines(x = predict(loglogistic.null, type = "quantile", p = seq(0.01, 0.99, by=.01))[1,],
+      y = rev(seq(0.01, 0.99, by = 0.01)),
+      col = "blue")
+
+## Add legends
+legend(x = "topright",
+       legend = c("Kaplan-Meier", "Cox (Efron)", "Weibull", "Log-logistic"),
+       lwd = 2, bty = "n",
+       col = c("black", "green", "red", "blue"))
 
 
