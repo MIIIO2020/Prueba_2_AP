@@ -12,6 +12,11 @@ library(remotes)
 #data
 data<-fread("data_fact_smart.csv")
 data<-rename(data,model=model_Bin)
+data$V1=NULL
+
+
+
+
 
 ### Parte III a ####
 #Modelo exponencial 
@@ -115,6 +120,20 @@ ggplot(km)+
 
 #smart_198_normalized
 
+#Grafico de los Beta de los modelos
+
+B_exp=modelo_exp$coefficients
+B_wei=modelo_wei$coefficients
+
+Com_Betas<- data.frame(
+  'Nombre de los coeficientes'=names(B_exp),
+  'Coeficientes del modelo exponencial'=unname(B_exp),
+  'Coeficientes del modelo weibull'=unname(B_wei)
+)
+
+ggplot(data= Com_Betas,aes(y=Com_Betas$Nombre.de.los.coeficientes,
+                           x=Com_Betas$Coeficientes.del.modelo.exponencial)
+       )+geom_point()
 
 
 ### Parte III b ####

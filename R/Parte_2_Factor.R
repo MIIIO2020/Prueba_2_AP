@@ -163,8 +163,8 @@ cat('\n','Ho:= las curvas son iguales','\n')
 }
 Test_curv(log_rang,Peto_test)
 
-#survreg(Surv(time_day) ~ as.factor(model_Bin) , df, dist='exponential')
-#exp(-0.7309016)
+survreg(Surv(time_day) ~ as.factor(model_Bin) , df, dist='exponential')
+exp(-0.7309016)-1
 
 
 ### Curvas de KM smart####
@@ -300,7 +300,7 @@ Test_curv(log_rang,Peto_test)
 # 
 # exp(-0.5466061)+exp(-0.3250286)+
 #   
-#   exp(0.6194902)
+# exp(-0.6194902)
 
 
 
