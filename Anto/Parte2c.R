@@ -6,8 +6,12 @@ library(dplyr)
 library(ggfortify)
 
 #Lectura de datos
-data<-fread("/Users/antoniaindaorlandi/Desktop/Análisis Predictivo/Prueba 2/data_fact_smart.csv")
+#data<-fread("/Users/antoniaindaorlandi/Desktop/Análisis Predictivo/Prueba 2/data_fact_smart.csv")
+data<-fread("data_fact_smart.csv")
+
 data<-rename(data,model=model_Bin)
+
+data$V1<-NULL
 
 
 ### Parte II a ####
@@ -73,16 +77,41 @@ autoplot(km_198)
 ### Parte II c ####
 #Inspección gráfica del supuesto de riesgos proporcionales
 #Método 1: log{-log(S)} vs log(t)
-plot(km_1, col=c("black", "red"), fun="cloglog")
-plot(km_3, col=c("black", "red"), fun="cloglog")
-plot(km_5, col=c("black", "red"), fun="cloglog")
-plot(km_7, col=c("black", "red"), fun="cloglog")
-plot(km_192, col=c("black", "red"), fun="cloglog")
-plot(km_193, col=c("black", "red"), fun="cloglog")
-plot(km_194, col=c("black", "red"), fun="cloglog")
-plot(km_197, col=c("black", "red"), fun="cloglog")
-plot(km_198, col=c("black", "red"), fun="cloglog")
-plot(km_m, col=c("black", "red"), fun="cloglog")
 
-#Método 2: log(HR) vs t       HR: riesgo relativo
-#plot(km_1, col=c("green","cyan",fun="kfhaekg")) Buscar la función
+# col=c("black", "red","green" ,"cyan")
+
+plot(km_1, col=c("black", "red","green" ,"cyan"), fun="cloglog")
++title(main='Smart_1_normaliced')
+
+plot(km_3, col=c("black", "red","green" ,"cyan"), fun="cloglog")
++title(main='Smart_3_normaliced')
+plot(km_5, col=c("black", "red"), fun="cloglog")
++title(main='Smart_5_normaliced')
+
+plot(km_7, col=c("black", "red","green" ), fun="cloglog")
++title(main='Smart_7_normaliced')
+
+plot(km_192, col=c("black", "red"), fun="cloglog")
++title(main='Smart_192_normaliced')
+
+plot(km_193, col=c("black", "red","green" ,"cyan"), fun="cloglog")
++title(main='Smart_193_normaliced')
+
+plot(km_194, col=c("black", "red","green" ,"cyan"), fun="cloglog")
++title(main='Smart_194_normaliced')
+
+plot(km_197, col=c("black", "red","green" ,"cyan"), fun="cloglog")
++title(main='Smart_197_normaliced')
+
+plot(km_198, col=c("black", "red","green" ,"cyan"), fun="cloglog")
++title(main='Smart_198_normaliced')
+
+plot(km_m, col=c("black", "red","green" ,"cyan"), fun="cloglog")+
+title(main='Comparación de riesgos proporcionales', sub='Model', xlab = 'log(tiempo)' , ylab='log{-log(S)}')
+
+# Método 2: log(HR) vs t       HR: riesgo relativo
+
+# Buscar la función
+
+#plot( km_m, col=c("black", "red","green" ,"cyan"),fun="kfhaekg") 
+
