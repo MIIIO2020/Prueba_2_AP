@@ -42,46 +42,6 @@ cat("El modelo que mejor se adapta a los datos es: ",
             Verosimilitud_wei))
   
 
-## Kaplan-Meier estimator without grouping
-#km.null <- survfit(data = data, time_day ~ 1)
-s <- with(data,Surv(time_day))
-
-km <-survfit(data=data,s~ 1)
-autoplot(km)
-
-
-#survplot(km)
-
-
-## Parametric estimation with Weibull distribution
-#weibull.null <- survreg(data = lung, SurvObj ~ 1, dist = "weibull")
-
-s_w=Surv(predict(modelo_wei))
-S_wei=survfit(data=data,s_w~ 1)
-
-s_e=Surv(predict(modelo_exp))
-S_exp=survfit(data=data,s_e~ 1)
-
-## Add legends
-legenda = c("Kaplan Meier", "Exponencial", "Weibull")#, "Log normal"
-colores = c("blue", "green", "red")#, "blue"
-
-ggplot(km)+
-  geom_step(aes(km$time,km$surv,colour = "Kaplan Meier"))+
-  geom_line(data = S_exp, aes(S_exp$time,S_exp$surv
-                              ,colour = "Exponencial"))+
-  geom_line(data=S_wei,aes(x = S_wei$time,
-                           y = S_wei$surv,colour = "Weibull" ))+
-  scale_colour_manual("", 
-                      breaks = legenda,
-                      values =colores) +
-  xlab("Tiempo en dias") +
-  scale_y_continuous("Survival Probabiliti", limits = c(0,1)) + 
-  labs(title="Grafica comparativa")
-
-
-
-
 
 
 
@@ -120,6 +80,9 @@ ggplot(km)+
 
 #smart_198_normalized
 
+
+
+#___________________________________________________
 #Grafico de los Beta de los modelos
 
 B_exp=modelo_exp$coefficients
@@ -131,9 +94,38 @@ Com_Betas<- data.frame(
   'Coeficientes del modelo weibull'=unname(B_wei)
 )
 
-ggplot(data= Com_Betas,aes(y=Com_Betas$Nombre.de.los.coeficientes,
-                           x=Com_Betas$Coeficientes.del.modelo.exponencial)
-       )+geom_point()
+Com_Betas$Coeficientes.del.modelo.exponencial=sapply(
+  Com_Betas$Coeficientes.del.modelo.exponencial,
+       function(x) ifelse(is.na(x),0,exp(x)**(-1) ))
+
+Com_Betas$Coeficientes.del.modelo.weibull=sapply(
+  Com_Betas$Coeficientes.del.modelo.weibull,
+  function(x) ifelse(is.na(x),0,exp(x)**(-1) ))
+
+
+
+
+
+## Add legends
+legenda = c( "Exponencial", "Weibull")#, "Log normal"
+colores = c("blue", "red")#, "blue"
+
+ggplot(Com_Betas)+
+  geom_point(aes(Com_Betas$Coeficientes.del.modelo.exponencial
+                ,Com_Betas$Nombre.de.los.coeficientes
+                ,colour = "Exponencial"))+
+  geom_point(aes(Com_Betas$Coeficientes.del.modelo.weibull
+                ,Com_Betas$Nombre.de.los.coeficientes
+                              ,colour = "Weibull"))+
+  scale_colour_manual("", 
+                      breaks = legenda,
+                      values =colores) +
+  xlab("Tasa de riesgo") +
+  ylab("Variables") + 
+  labs(title="Grafica de coeficientes")
+
+
+
 
 
 ### Parte III b ####
