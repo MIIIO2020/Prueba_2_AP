@@ -10,8 +10,7 @@ library(Hmisc) #Cosas rolf
 library(remotes) #Cosas rolf
 library(stats)
 
-
-#data=fread('data/data_smart.csv')
+#Lectura de datos
 df=fread("/Users/antoniaindaorlandi/Desktop/Análisis Predictivo/Prueba 2/data_smart_mean_delta_skew.csv")
 
 ### KM ####
@@ -50,6 +49,7 @@ km_model <- survfit(Surv(time_day) ~ as.factor(model_Bin), data=df)
 
 autoplot(km_model)
 summary(km_model, times = c(1,30,60,90*(1:10)))
+
 #rm(km_model)
 
 #Vewmos segun LogRank si las curvas son dif en el final
@@ -99,7 +99,7 @@ df.smart$model=NULL
 
 Colums_df=colnames(df.smart)
 Colums_df
-l=length(Colums_df) #ya no se necesita l
+#l=length(Colums_df) #ya no se necesita l
 
 Colums_df=Colums_df[ 3:11 ]
 
@@ -128,11 +128,11 @@ D
 
 
 
-df.smart$smart_1_normalized <- cut(X , breaks = D, 
+df.smart$smart_1_f <- cut(X , breaks = D, 
                                    labels = c('0.25','0.5','0.75','1'), right = FALSE)
 
 
-km_fit <- survfit(Surv(time_day) ~ as.factor(smart_1_normalized), data=df.smart)
+km_fit <- survfit(Surv(time_day) ~ as.factor(smart_1_f), data=df.smart)
 
 #summary(km_fit, time_day = c(1,30,60,90*(1:10)))
 
@@ -141,13 +141,13 @@ autoplot(km_fit)
 
 #Vewmos segun LogRank si las curvas son dif en el final
 #With rho = 0 this is the log-rank 
-log_rang=survdiff(Surv(time_day) ~ as.factor(smart_1_normalized) , df.smart)
+log_rang=survdiff(Surv(time_day) ~ as.factor(smart_1_f) , df.smart)
 
 #with rho = 1 it is equivalent to the Peto & Peto
 #modification of the Gehan-Wilcoxon test.
-Peto_test=survdiff(Surv(time_day) ~ as.factor(smart_1_normalized) , df.smart, rho = 1)
+Peto_test=survdiff(Surv(time_day) ~ as.factor(smart_1_f) , df.smart, rho = 1)
 
-#survdiff(Surv(time_day) ~ as.factor(smart_1_normalized), data=df.smart,rho = 1)
+#survdiff(Surv(time_day) ~ as.factor(smart_1_normalized_mean), data=df.smart,rho = 1)
 
 Test_curv(log_rang,Peto_test)
 
@@ -190,7 +190,7 @@ df.smart$smart_3_f <- cut(X , breaks = D,
                                    , right = FALSE)
 
 
-km_fit <- survfit(Surv(time_day) ~ as.factor(smart_3_normalized), data=df.smart)
+km_fit <- survfit(Surv(time_day) ~ as.factor(smart_3_f), data=df.smart)
 
 #summary(km_fit, time_day = c(1,30,60,90*(1:10)))
 
@@ -199,11 +199,11 @@ autoplot(km_fit)
 
 #Vewmos segun LogRank si las curvas son dif en el final
 #With rho = 0 this is the log-rank 
-log_rang=survdiff(Surv(time_day) ~ as.factor(smart_3_normalized) , df.smart)
+log_rang=survdiff(Surv(time_day) ~ as.factor(smart_3_f) , df.smart)
 
 #with rho = 1 it is equivalent to the Peto & Peto
 #modification of the Gehan-Wilcoxon test.
-Peto_test=survdiff(Surv(time_day) ~ as.factor(smart_3_normalized) , df.smart, rho = 1)
+Peto_test=survdiff(Surv(time_day) ~ as.factor(smart_3_f) , df.smart, rho = 1)
 
 #survdiff(Surv(time_day) ~ as.factor(smart_1_normalized), data=df.smart,rho = 1)
 
@@ -248,21 +248,21 @@ df.smart$smart_5_f <- cut(X , breaks = D,
                                    , right = FALSE)
 
 
-km_fit <- survfit(Surv(time_day) ~ as.factor(smart_5_normalized), data=df.smart)
+km_fit <- survfit(Surv(time_day) ~ as.factor(smart_5_f), data=df.smart)
 #summary(km_fit, time_day = c(1,30,60,90*(1:10)))
 
 autoplot(km_fit)
 
-survdiff(Surv(time_day) ~ as.factor(smart_5_normalized), data=df.smart, rho = 1)
+survdiff(Surv(time_day) ~ as.factor(smart_5_f), data=df.smart, rho = 1)
 
 
 #Vewmos segun LogRank si las curvas son dif en el final
 #With rho = 0 this is the log-rank 
-log_rang=survdiff(Surv(time_day) ~ as.factor(smart_5_normalized) , df.smart)
+log_rang=survdiff(Surv(time_day) ~ as.factor(smart_5_f) , df.smart)
 
 #with rho = 1 it is equivalent to the Peto & Peto
 #modification of the Gehan-Wilcoxon test.
-Peto_test=survdiff(Surv(time_day) ~ as.factor(smart_5_normalized) , df.smart, rho = 1)
+Peto_test=survdiff(Surv(time_day) ~ as.factor(smart_5_f) , df.smart, rho = 1)
 
 #survdiff(Surv(time_day) ~ as.factor(smart_1_normalized), data=df.smart,rho = 1)
 
@@ -291,12 +291,12 @@ for (i in c(2:l)) {
 D
 
 #etiquetamos la particion
-df.smart$smart_7_normalized <- cut(X , breaks = D, 
+df.smart$smart_7_f <- cut(X , breaks = D, 
                                    labels = c('0.25','0.75','1')
                                    , right = FALSE)
 
 
-km_fit <- survfit(Surv(time_day) ~ as.factor(smart_7_normalized), data=df.smart)
+km_fit <- survfit(Surv(time_day) ~ as.factor(smart_7_f), data=df.smart)
 #summary(km_fit, time_day = c(1,30,60,90*(1:10)))
 
 autoplot(km_fit)
@@ -306,11 +306,11 @@ autoplot(km_fit)
 
 #Vewmos segun LogRank si las curvas son dif en el final
 #With rho = 0 this is the log-rank 
-log_rang=survdiff(Surv(time_day) ~ as.factor(smart_7_normalized) , df.smart)
+log_rang=survdiff(Surv(time_day) ~ as.factor(smart_7_f) , df.smart)
 
 #with rho = 1 it is equivalent to the Peto & Peto
 #modification of the Gehan-Wilcoxon test.
-Peto_test=survdiff(Surv(time_day) ~ as.factor(smart_7_normalized) , df.smart, rho = 1)
+Peto_test=survdiff(Surv(time_day) ~ as.factor(smart_7_f) , df.smart, rho = 1)
 
 #survdiff(Surv(time_day) ~ as.factor(smart_1_normalized), data=df.smart,rho = 1)
 
@@ -338,26 +338,26 @@ D
 
 
 #etiquetamos la particion
-df.smart$smart_192_normalized <- cut(X , breaks = D, 
+df.smart$smart_192_f <- cut(X , breaks = D, 
                                      labels = c('0.75','1')
                                      , right = FALSE)
 
 
-km_fit <- survfit(Surv(time_day) ~ as.factor(smart_192_normalized), data=df.smart)
+km_fit <- survfit(Surv(time_day) ~ as.factor(smart_192_f), data=df.smart)
 #summary(km_fit, time_day = c(1,30,60,90*(1:10)))
 
 autoplot(km_fit)
 
-survdiff(Surv(time_day) ~ as.factor(smart_192_normalized), data=df.smart, rho = 1)
+survdiff(Surv(time_day) ~ as.factor(smart_192_f), data=df.smart, rho = 1)
 
 
 #Vewmos segun LogRank si las curvas son dif en el final
 #With rho = 0 this is the log-rank 
-log_rang=survdiff(Surv(time_day) ~ as.factor(smart_192_normalized) , df.smart)
+log_rang=survdiff(Surv(time_day) ~ as.factor(smart_192_f) , df.smart)
 
 #with rho = 1 it is equivalent to the Peto & Peto
 #modification of the Gehan-Wilcoxon test.
-Peto_test=survdiff(Surv(time_day) ~ as.factor(smart_192_normalized) , df.smart, rho = 1)
+Peto_test=survdiff(Surv(time_day) ~ as.factor(smart_192_f) , df.smart, rho = 1)
 
 #survdiff(Surv(time_day) ~ as.factor(smart_1_normalized), data=df.smart,rho = 1)
 
@@ -385,12 +385,12 @@ D
 
 
 #etiquetamos la particion
-df.smart$smart_193_normalized <- cut(X , breaks = D, 
+df.smart$smart_193_f <- cut(X , breaks = D, 
                                      labels = c('0.25','0.75','1')
                                      , right = FALSE)
 
 
-km_fit <- survfit(Surv(time_day) ~ as.factor(smart_193_normalized), data=df.smart)
+km_fit <- survfit(Surv(time_day) ~ as.factor(smart_193_f), data=df.smart)
 #summary(km_fit, time_day = c(1,30,60,90*(1:10)))
 
 autoplot(km_fit)
@@ -399,11 +399,11 @@ autoplot(km_fit)
 
 #Vewmos segun LogRank si las curvas son dif en el final
 #With rho = 0 this is the log-rank 
-log_rang=survdiff(Surv(time_day) ~ as.factor(smart_193_normalized) , df.smart)
+log_rang=survdiff(Surv(time_day) ~ as.factor(smart_193_f) , df.smart)
 
 #with rho = 1 it is equivalent to the Peto & Peto
 #modification of the Gehan-Wilcoxon test.
-Peto_test=survdiff(Surv(time_day) ~ as.factor(smart_193_normalized) , df.smart, rho = 1)
+Peto_test=survdiff(Surv(time_day) ~ as.factor(smart_193_f) , df.smart, rho = 1)
 
 #survdiff(Surv(time_day) ~ as.factor(smart_1_normalized), data=df.smart,rho = 1)
 
@@ -431,12 +431,12 @@ D
 
 
 #etiquetamos la particion
-df.smart$smart_194_normalized <- cut(X , breaks = D, 
+df.smart$smart_194_f <- cut(X , breaks = D, 
                                      labels = c('0.25','0.75','1')
                                      , right = FALSE)
 
 
-km_fit <- survfit(Surv(time_day) ~ as.factor(smart_194_normalized), data=df.smart)
+km_fit <- survfit(Surv(time_day) ~ as.factor(smart_194_f), data=df.smart)
 #summary(km_fit, time_day = c(1,30,60,90*(1:10)))
 
 autoplot(km_fit)
@@ -444,11 +444,11 @@ autoplot(km_fit)
 
 #Vewmos segun LogRank si las curvas son dif en el final
 #With rho = 0 this is the log-rank 
-log_rang=survdiff(Surv(time_day) ~ as.factor(smart_194_normalized) , df.smart)
+log_rang=survdiff(Surv(time_day) ~ as.factor(smart_194_f) , df.smart)
 
 #with rho = 1 it is equivalent to the Peto & Peto
 #modification of the Gehan-Wilcoxon test.
-Peto_test=survdiff(Surv(time_day) ~ as.factor(smart_194_normalized) , df.smart, rho = 1)
+Peto_test=survdiff(Surv(time_day) ~ as.factor(smart_194_f) , df.smart, rho = 1)
 
 #survdiff(Surv(time_day) ~ as.factor(smart_1_normalized), data=df.smart,rho = 1)
 
@@ -477,12 +477,12 @@ D
 
 
 #etiquetamos la particion
-df.smart$smart_197_normalized <- cut(X , breaks = D, 
+df.smart$smart_197_f <- cut(X , breaks = D, 
                                      labels = c('0.75','1')
                                      , right = FALSE)
 
 
-km_fit <- survfit(Surv(time_day) ~ as.factor(smart_197_normalized), data=df.smart)
+km_fit <- survfit(Surv(time_day) ~ as.factor(smart_197_f), data=df.smart)
 #summary(km_fit, time_day = c(1,30,60,90*(1:10)))
 
 autoplot(km_fit)
@@ -492,11 +492,11 @@ autoplot(km_fit)
 
 #Vewmos segun LogRank si las curvas son dif en el final
 #With rho = 0 this is the log-rank 
-log_rang=survdiff(Surv(time_day) ~ as.factor(smart_197_normalized) , df.smart)
+log_rang=survdiff(Surv(time_day) ~ as.factor(smart_197_f) , df.smart)
 
 #with rho = 1 it is equivalent to the Peto & Peto
 #modification of the Gehan-Wilcoxon test.
-Peto_test=survdiff(Surv(time_day) ~ as.factor(smart_197_normalized) , df.smart, rho = 1)
+Peto_test=survdiff(Surv(time_day) ~ as.factor(smart_197_f) , df.smart, rho = 1)
 
 #survdiff(Surv(time_day) ~ as.factor(smart_1_normalized), data=df.smart,rho = 1)
 
@@ -531,12 +531,12 @@ D
 #df.smart$smart_198_normalized =df$smart_198_normalized 
 
 #etiquetamos la particion
-df.smart$smart_198_normalized <- cut(X , breaks = D, 
+df.smart$smart_198_f <- cut(X , breaks = D, 
                                      labels = c('0.01','0.96','1')
                                      , right = FALSE)
 
 
-km_fit <- survfit(Surv(time_day) ~ as.factor(smart_198_normalized), data=df.smart)
+km_fit <- survfit(Surv(time_day) ~ as.factor(smart_198_f), data=df.smart)
 #summary(km_fit, time_day = c(1,30,60,90*(1:10)))
 
 autoplot(km_fit)
@@ -546,11 +546,11 @@ autoplot(km_fit)
 
 #Vewmos segun LogRank si las curvas son dif en el final
 #With rho = 0 this is the log-rank 
-log_rang=survdiff(Surv(time_day) ~ as.factor(smart_198_normalized) , df.smart)
+log_rang=survdiff(Surv(time_day) ~ as.factor(smart_198_f) , df.smart)
 
 #with rho = 1 it is equivalent to the Peto & Peto
 #modification of the Gehan-Wilcoxon test.
-Peto_test=survdiff(Surv(time_day) ~ as.factor(smart_198_normalized) , df.smart, rho = 1)
+Peto_test=survdiff(Surv(time_day) ~ as.factor(smart_198_f) , df.smart, rho = 1)
 
 #survdiff(Surv(time_day) ~ as.factor(smart_1_normalized), data=df.smart,rho = 1)
 
