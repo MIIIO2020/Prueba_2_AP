@@ -28,8 +28,8 @@ library(rms)
 
 
 
-data=fread('data/data_smart.csv')
-
+#data=fread('data/data_smart.csv')
+data=fread('data/data_smart_mean.csv')
 
 ### Comenzamos a ajustar la data ####
 data$serial_number=as.factor(data$serial_number)
@@ -154,6 +154,7 @@ df$date=NULL
 df$serial_number=NULL
 df$capacity_bytes=NULL
 
+df=data
 
 
 
@@ -174,7 +175,7 @@ rm(km_fit)
 ggplot(data = df, aes(y = model, x = time_day))+geom_point()
 
 #Histograma de los model
-ggplot(df, aes(y=model) ) + 
+ggplot(data=df, aes(y=model) ) + 
   geom_bar(orientation="y")
 
   # Se obs que el modelo ST40000DM000
@@ -245,16 +246,16 @@ exp(-0.7309016)-1
   #variado de forma automatica
 
 Colums_df=colnames(df.smart)
-Colums_df<
+Colums_df
 l=length(Colums_df)
 
-Colums_df=Colums_df[ 2:l ]
+Colums_df=Colums_df[ 3:l ]
 
-Colums_df=Colums_df[!Colums_df %in% "time_day"]
+Colums_df=Colums_df[!Colums_df %in% "model_Bin"]#
 Colums_df
 
 
-### KM por medio de  quantile #####
+
 
 
 ### KM smart_1_normalized ####
@@ -706,4 +707,4 @@ Peto_test=survdiff(Surv(time_day) ~ as.factor(smart_198_normalized) , df.smart, 
 
 Test_curv(log_rang,Peto_test)
 
-write.csv(df.smart,file = "data_fact_smart")
+write.csv(df.smart,file = "data_fact_smart_mean")
