@@ -6,80 +6,31 @@ library(ggplot2)
 library(dplyr)
 library(ggfortify)
 library(rms)
-library(Hmisc)
-# install.packages("remotes")
-library(remotes)
+library(Hmisc) #Cosas rolf
+library(remotes) #Cosas rolf
+
 #data
-data<-fread("data_fact_smart.csv")
+data<-fread("/Users/antoniaindaorlandi/Desktop/Análisis Predictivo/Prueba 2/data_smart_skew.csv")
 data<-rename(data,model=model_Bin)
 
 ### Parte III a ####
 #Modelo exponencial 
-modelo_exp<-survreg(Surv(time_day) ~ as.factor(model) + as.factor(smart_1_normalized) + as.factor(smart_3_normalized) + as.factor(smart_5_normalized) + as.factor(smart_7_normalized) + as.factor(smart_192_normalized) + as.factor(smart_193_normalized) + as.factor(smart_194_normalized) + as.factor(smart_197_normalized) + as.factor(smart_198_normalized), data, dist='exponential') #Después de la "colita de chancho" agregar todas las variables…
+modelo_exp<-survreg(Surv(time_day) ~ as.factor(model)  + as.factor(smart_3_f) + smart_5_f + smart_7_f + smart_192_f  + smart_194_f + smart_197_f + smart_198_f + smart_3_normalized_delta_skew + smart_7_normalized_delta_skew + smart_193_normalized_delta_skew, data, dist='exponential') #Después de la "colita de chancho" agregar todas las variables…
 modelo_exp
+#modelo_exp<-survreg(Surv(time_day) ~ as.factor(model) + as.factor(smart_1_f) + as.factor(smart_3_f) + as.factor(smart_5_f) + as.factor(smart_7_f) + as.factor(smart_192_f) + as.factor(smart_193_f) + as.factor(smart_194_f) + as.factor(smart_197_f) + as.factor(smart_198_f)+ smart_3_normalized_delta_skew + smart_7_normalized_delta_skew + smart_193_normalized_delta_skew, data, dist='exponential') #Después de la "colita de chancho" agregar todas las variables…
 Verosimilitud_exp<-logLik(modelo_exp)
 
 
 #Modelo weibull
-modelo_wei<-survreg(Surv(time_day) ~ as.factor(model) + as.factor(smart_1_normalized) + as.factor(smart_3_normalized) + as.factor(smart_5_normalized) + as.factor(smart_7_normalized) + as.factor(smart_192_normalized) + as.factor(smart_193_normalized) + as.factor(smart_194_normalized) + as.factor(smart_197_normalized) + as.factor(smart_198_normalized), data, dist='weibull') #Después de la "colita de chancho" agregar todas las variables…
+modelo_wei<-survreg(Surv(time_day) ~ as.factor(model)  + as.factor(smart_3_f) + smart_5_f + smart_7_f + smart_192_f  + smart_194_f + smart_197_f + smart_198_f + smart_3_normalized_delta_skew + smart_7_normalized_delta_skew + smart_193_normalized_delta_skew, data, dist='weibull') #Después de la "colita de chancho" agregar todas las variables…
 modelo_wei
 Verosimilitud_wei<-logLik(modelo_wei)
 
 
-
 #Para comparar cuál es el mejor modelo: analizar la verosimilitud
 #LogLikelihood…
-cat("El modelo que mejor se adapta a los datos es: ",
-    ifelse (Verosimilitud_exp>Verosimilitud_wei,
-            "el Exponencial","el Weibull"),
-    "\n","Dado que tiene una verosimilitud mayor y equivalente a:"
-    ,ifelse(Verosimilitud_exp>Verosimilitud_wei,Verosimilitud_exp,
-            Verosimilitud_wei))
+cat("El modelo que mejor se adapta a los datos es: ", ifelse (Verosimilitud_exp>Verosimilitud_wei, "el Exponencial","el Weibull"),"\n","Dado que tiene una verosimilitud mayor y equivalente a:",ifelse(Verosimilitud_exp>Verosimilitud_wei,Verosimilitud_exp,Verosimilitud_wei))
   
-
-## Kaplan-Meier estimator without grouping
-#km.null <- survfit(data = data, time_day ~ 1)
-s <- with(data,Surv(time_day))
-
-km <-survfit(data=data,s~ 1)
-autoplot(km)
-
-
-#survplot(km)
-
-
-## Parametric estimation with Weibull distribution
-#weibull.null <- survreg(data = lung, SurvObj ~ 1, dist = "weibull")
-
-s_w=Surv(predict(modelo_wei))
-S_wei=survfit(data=data,s_w~ 1)
-
-s_e=Surv(predict(modelo_exp))
-S_exp=survfit(data=data,s_e~ 1)
-
-## Add legends
-legenda = c("Kaplan Meier", "Exponencial", "Weibull")#, "Log normal"
-colores = c("blue", "green", "red")#, "blue"
-
-ggplot(km)+
-  geom_step(aes(km$time,km$surv,colour = "Kaplan Meier"))+
-  geom_line(data = S_exp, aes(S_exp$time,S_exp$surv
-                              ,colour = "Exponencial"))+
-  geom_line(data=S_wei,aes(x = S_wei$time,
-                           y = S_wei$surv,colour = "Weibull" ))+
-  scale_colour_manual("", 
-                      breaks = legenda,
-                      values =colores) +
-  xlab("Tiempo en dias") +
-  scale_y_continuous("Survival Probabiliti", limits = c(0,1)) + 
-  labs(title="Grafica comparativa")
-
-
-
-
-
-
-
 #Interprete los resultados del modelo:
   #Dependiendo del modelo elegido, observar el comportamiento de las variables, a partir del riesgo relativo (HR)
   #HR=exp(ß)
@@ -119,17 +70,17 @@ ggplot(km)+
 
 ### Parte III b ####
 #Modelo Lognormal
-modelo_logn<-survreg(Surv(time_day) ~ as.factor(model) + as.factor(smart_1_normalized) + as.factor(smart_3_normalized) + as.factor(smart_5_normalized) + as.factor(smart_7_normalized) + as.factor(smart_192_normalized) + as.factor(smart_193_normalized) + as.factor(smart_194_normalized) + as.factor(smart_197_normalized) + as.factor(smart_198_normalized), data, dist='lognormal') #Después de la "colita de chancho" agregar todas las variables…
+modelo_logn<-survreg(Surv(time_day) ~ as.factor(model)  + as.factor(smart_3_f) + smart_5_f + smart_7_f + smart_192_f  + smart_194_f + smart_197_f + smart_198_f + smart_3_normalized_delta_skew + smart_7_normalized_delta_skew + smart_193_normalized_delta_skew, data, dist='lognormal') #Después de la "colita de chancho" agregar todas las variables…
 modelo_logn
 Verosimilitud_logn<-logLik(modelo_logn)
 
 #Modelo Gamma #Después de la "colita de chancho" agregar todas las variables…
 #modelo_gam<-survreg(Surv(time_day) ~ as.factor(model), data, dist='gamma') #No existe gamma … ver como generar este modelo
 
-modelo_gamma<-flexsurvreg(Surv(time_day)~as.factor(model) + as.factor(smart_1_normalized) + as.factor(smart_3_normalized) + as.factor(smart_5_normalized) + as.factor(smart_7_normalized) + as.factor(smart_192_normalized) + as.factor(smart_193_normalized) + as.factor(smart_194_normalized) + as.factor(smart_197_normalized) + as.factor(smart_198_normalized),data=data,dist='gamma')
+modelo_gamma<-flexsurvreg(Surv(time_day)~ as.factor(model)  + as.factor(smart_3_f) + smart_5_f + smart_7_f + smart_192_f  + smart_194_f + smart_197_f + smart_198_f + smart_3_normalized_delta_skew + smart_7_normalized_delta_skew + smart_193_normalized_delta_skew,data=data,dist='gamma')
 modelo_gamma
 Verosimilitud_gamma<-logLik(modelo_gamma)
-
+#Error en gamma variables correlacionadas
 
 #Para comparar cuál es el mejor modelo: analizar la verosimilitud
 #LogLikelihood…
@@ -140,46 +91,6 @@ Verosimilitud=c(Verosimilitud_exp,Verosimilitud_wei,Verosimilitud_logn,Verosimil
 Modelos=c("Exponencial","Weibull","Lognormal","Gamma")
 Indice=which.max(Verosimilitud)
 cat("El modelo que mejor se adapta a los datos es el: ",Modelos[Indice],"\n", "Con una verosimilitud de ",Verosimilitud[Indice])
-
-
-## Graficas KM comparativas
-
-s_log=Surv(predict(modelo_logn))
-S_Log=survfit(data=data,s_log~ 1)
-
-s_g=Surv(predict(modelo_gamma))
-S_Gam=survfit(data=data,s_log~ 1)
-
-
-## Add legends
-legenda = c("Kaplan Meier", "Exponencial",
-            "Weibull",'Lognormal','Gamma')#, "Log normal"
-colores = c("blue", "green", "red",'black','purple')#, "blue"
-
-ggplot(km)+
-  geom_step(aes(km$time,km$surv,colour = "Kaplan Meier"))+
-  geom_line(data = S_exp, aes(S_exp$time,S_exp$surv
-                              ,colour = "Exponencial"))+
-  geom_line(data=S_wei,aes(x = S_wei$time,
-                           y = S_wei$surv,colour = "Weibull" ))+
-  
-  geom_line(data=S_Log,aes(x = S_Log$time,
-                           y = S_Log$surv,colour = "Lognormal" ))+
-  geom_line(data=S_Log,aes(x = S_Log$time,
-                           y = S_Log$surv,colour = "Lognormal" ))+
-  
-  scale_colour_manual("", 
-                      breaks = legenda,
-                      values =colores) +
-  xlab("Tiempo en dias") +
-  scale_y_continuous("Survival Probabiliti", limits = c(0,1)) + 
-  labs(title="Grafica comparativa")
-
-
-
-
-
-
 
 ### Parte III c ####
 #Insertar modelo Kaplan-Meier:
@@ -230,87 +141,35 @@ autoplot(km)
 #modelo_cox<-step(null, scope = list(upper=full), data=model_data, direction="both")
 #summary(modelo_cox)
 
-### Graficas de KM####
-# # Alternatively we can fully specify the plot in each layer. This
-# # is not useful here, but can be more clear when working with complex
-# # mult-dataset graphics
-# ggplot() +
-#   geom_point(data = df, aes(gp, y)) +
-#   geom_point(data = ds, aes(gp, mean), colour = 'red', size = 3) +
-#   geom_errorbar(
-#     data = ds,
-#     aes(gp, mean, ymin = mean - sd, ymax = mean + sd),
-#     colour = 'red',
-#     width = 0.4
-#   )
 
 
 ## Kaplan-Meier estimator without grouping
-#km.null <- survfit(data = data, time_day ~ 1)
-s <- with(data,Surv(time_day))
 
-km <-survfit(data=data,s~ 1)
-autoplot(km)
+km <- survfit(Surv(time_day)~ 1, data=data)
 
-
-#survplot(km)
-
-
+#km <- survfit(data = lung, SurvObj ~ 1)
+#autoplot(km)
+plot(data$time_day,km)
 ## Overplot estimation from Cox regression by Efron method
-cox <- coxph(Surv(time_day)~as.factor(model) + as.factor(smart_1_normalized) + as.factor(smart_3_normalized) + as.factor(smart_5_normalized) + as.factor(smart_7_normalized) + as.factor(smart_192_normalized) + as.factor(smart_193_normalized) + as.factor(smart_194_normalized) + as.factor(smart_197_normalized) + as.factor(smart_198_normalized),data = data)
-S_cox=survfit(cox)
-ggplot(S_cox,aes(S_cox$time,S_cox$surv), col = "green")+geom_line()
+cox <- coxph(Surv(time_day)~ as.factor(model)  + as.factor(smart_3_f) + smart_5_f + smart_7_f + smart_192_f  + smart_194_f + smart_197_f + smart_198_f + smart_3_normalized_delta_skew + smart_7_normalized_delta_skew + smart_193_normalized_delta_skew,data = data)
+lines(cox, col = "green")
 
 ## Parametric estimation with Weibull distribution
 #weibull.null <- survreg(data = lung, SurvObj ~ 1, dist = "weibull")
-
-s_w=Surv(predict(modelo_wei))
-
-# P_m
-#
-
-S_wei=survfit(data=data,s_w~ 1)
-
-#data$predict_modelo_wei<-predict(modelo_wei)
-
-# D_wei=cbind( predict(modelo_wei, type = "quantile", p = seq(0.0001, 0.99, by=.01))[1,],
-#              rev(seq(0.0001, 0.99, by = 0.01)))
-# 
-# D_wei=cbind( predict(modelo_wei),
-#              rev(seq(0.01, 0.99, by = 0.01)))
-
-# lines(x = predict(modelo_wei, type = "quantile", p = seq(0.01, 0.99, by=.01))[1,],
-#       y = rev(seq(0.01, 0.99, by = 0.01)),
-#       col = "red")
+#lines(x = predict(modelo_wei, type = "quantile", p = seq(0.01, 0.99, by=.01))[1,], y = rev(seq(0.01, 0.99, by = 0.01)),col = "red")
+lines(x=predict(modelo_exp), col="blue")
+lines(x=predict(modelo_wei), col="red")
 
 ## Parametric estimation with log-logistic distribution
 #loglogistic.null <- survreg(data = lung, SurvObj ~ 1, dist = "loglogistic")
-# lines(x = predict(modelo_logn, type = "quantile", p = seq(0.01, 0.99, by=.01))[1,],
-#       y = rev(seq(0.01, 0.99, by = 0.01)),
-#       col = "blue")
+#lines(x = predict(modelo_logn, type = "quantile", p = seq(0.01, 0.99, by=.01))[1,],y = rev(seq(0.01, 0.99, by = 0.01)),col = "blue")
+lines(x=predict(modelo_logn), col="orange")
 
+lines(x=predict(modelo_gamma), col="brown")
 ## Add legends
-legenda = c("Kaplan Meier", "Cox", "Weibull")#, "Log normal"
-colores = c("blue", "green", "red")#, "blue"
-
-ggplot(km)+
-    geom_step(aes(km$time,km$surv,colour = "Kaplan Meier"))+
-    geom_line(data = S_cox, aes(S_cox$time,S_cox$surv
-              ,colour = "Cox"))+
-    geom_line(data=S_wei,aes(x = S_wei$time,
-               y = S_wei$surv,colour = "Weibull" ))+
-  scale_colour_manual("", 
-                      breaks = legenda,
-                      values =colores) +
-  xlab("Tiempo en dias") +
-  scale_y_continuous("Survival Probabiliti", limits = c(0,1)) + 
-  labs(title="Grafica comparativa")
-  
-  
-  
-# legend(x = "topright",
-#        legend = c("Kaplan-Meier", "Cox", "Weibull", "Log normal"),
-#        lwd = 2, bty = "n",
-#        col = c("black", "green", "red", "blue"))
+legend(x = "topright",
+       legend = c("Kaplan-Meier", "Cox", "Weibull", "Log normal"),
+       lwd = 2, bty = "n",
+       col = c("black", "green", "red", "blue"))
 
 
