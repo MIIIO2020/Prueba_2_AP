@@ -11,3 +11,7 @@ https://cran.r-project.org/web/packages/flexsurv/vignettes/flexsurv.pdf
 R notebook Graph
 
 http://rstudio-pubs-static.s3.amazonaws.com/5560_c24449c468224fd4af9f3e512a24e07d.html
+
+
+Interpretación de los gráficos cloglog
+https://bookdown.org/sestelo/sa_financial/cox.html
