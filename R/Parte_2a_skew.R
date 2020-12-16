@@ -55,35 +55,17 @@ rm(NAs)
 
 
 
-
-
-#Se encontraron variables SMART con muchisimos Na,
-#por lo que se decide eliminarlas 
-
-#Resulta que solo hay 4 items que no poseen valores en las variables smart 
-#smart_192_normalized
-#smart_193_normalized
-
-
-
 ### Vemos los valores cuando fallan los items ####
-# data$failure=as.factor(data$failure) Resulta que no filtra como factor
 
-#data frame con la información de los productos al momento de fallar
 df=data#[data$failure=='1',]
-#df$failure=NULL
-#df$vida_util_restante_int=NULL
-df$vida_util_restante=NULL
-df$vida_util=NULL
-df$vida_util_days=NULL
-df$end_date=NULL
-df$date=NULL
 df$serial_number=NULL
-df$capacity_bytes=NULL
+
 
 
 
 ### Ajuste de valores para smart mean####
+
+Funcion_no_usada<- function(){
 NAs = as.data.frame(sapply(df, function(x) sum(is.na(x))))
 colnames(NAs) = c("Count_NAs")
 NAs$Feature = rownames(NAs)                           
@@ -164,76 +146,23 @@ ggplot(NAs, aes(x=reorder(Feature,Count_NAs), y=Count_NAs)) +
   geom_bar(stat="identity") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-
+}
 
 
 
 
 
 ### KM ####
-df=data[data$failure=='1',]
-df$failure=NULL
-df$vida_util_restante_int=NULL
-df$vida_util_restante=NULL
-df$vida_util=NULL
-df$vida_util_days=NULL
-df$end_date=NULL
-df$date=NULL
+df=data#[data$failure=='1',]
 df$serial_number=NULL
-df$capacity_bytes=NULL
-
-df=data
 
 
 
 
 
-
-
-#S(t) general
-km_fit <- survfit(Surv(time_day) ~ 1, data=df)
-summary(km_fit, time_day = c(1,30,60,90*(1:10)))
-autoplot(km_fit)
-
-rm(km_fit)
-
-
-### KM-Model####
-  # veo como la variable model posee influencia en el time_day
-ggplot(data = df, aes(y = model, x = time_day))+geom_point()
-
-#Histograma de los model
-ggplot(data=df, aes(y=model) ) + 
-  geom_bar(orientation="y")
-
-  # Se obs que el modelo ST40000DM000
-  # es el con una mayor frecuencia
-  # es por lo que se creará una variable dummy 
-  # par identificar pertenencia a este modelo
-
-model_df <- mutate(df, model_F = ifelse((model == 'ST4000DM000'), "ST40000DM000", "other"),
-              model = factor(model_F),
-              time_day = time_day)
-
-df$model_Bin=model_df$model
-
-rm(model_df)
-
-km_model <- survfit(Surv(time_day) ~ as.factor(model_Bin), data=df)
-#summary(km_fit, time_day = c(1,30,60,90*(1:10)))
-
-autoplot(km_model)
-summary(km_model, times = c(1,30,60,90*(1:10)))
-#rm(km_model)
-
-#Vewmos segun LogRank si las curvas son dif en el final
-#With rho = 0 this is the log-rank 
-log_rang=survdiff(Surv(time_day) ~ as.factor(model_Bin) , df)
-
-
-#with rho = 1 it is equivalent to the Peto & Peto
-#modification of the Gehan-Wilcoxon test.
-Peto_test=survdiff(Surv(time_day) ~ as.factor(model_Bin) , df, rho = 1)
+ggplot(data = df, aes(y = time_day,
+                      x = smart_1_normalized_delta_skew))+
+  geom_point()
 
 ### Función de Test de comparación de curvas ####
 Test_curv<-function(log_rang,Peto_test){
@@ -255,13 +184,8 @@ cat('Peto_test P-value: ', Peto_test
             " Se conserva Ho, No hay evidencia para rechazar Ho"),'\n' )
 cat('\n','Ho:= las curvas son iguales','\n')
 }
-Test_curv(log_rang,Peto_test)
 
-survreg(Surv(time_day) ~ as.factor(model_Bin) , df, dist='exponential')
-exp(-0.7309016)-1
-
-
-### Curvas de KM smart####
+### Curvas de KM smart skew####
 
   #Creamos una copia para ajustar una a 
   #una las var smart sin afectar a df
@@ -277,9 +201,10 @@ Colums_df=colnames(df.smart)
 Colums_df
 l=length(Colums_df)
 
-Colums_df=Colums_df[ 3:l ]
+Colums_df=Colums_df[ 12:l ]
 
-Colums_df=Colums_df[!Colums_df %in% "model_Bin"]#
+#Colums_df=Colums_df[ 3:11 ]
+#Colums_df=Colums_df[!Colums_df %in% "model_Bin"]#
 Colums_df
 
 
@@ -288,14 +213,32 @@ Colums_df
 
 ### KM smart_1_normalized ####
 
-i='smart_1_normalized'
+i=Colums_df[1]
+
+X=(df.smart[[i]])
+length(X)
+hist(X)
+
+Y= X[!is.na(X)]
+length(Y)
+
+X=sapply(X, function(x) ifelse(is.na(x),mean(Y),x ) )
+hist(X)
 
 
-X=(df.smart[,..i])
 
-hist(X[[i]])
 
-D=quantile(X[[i]], prob=c(0,0.25,0.5,0.75,1))
+ggplot(data = df.smart, aes(y = time_day,
+                      x = X))+
+  geom_point()
+
+
+
+
+
+#D=quantile(X, prob=c(0,0.25,0.5,0.75,1))
+D=quantile(X, prob=c(0,0.5,0.75,1))
+D
 l=length(D[])
 for (j in c(2:l)) {
   D[j]<-0.00001+D[j]
@@ -303,8 +246,8 @@ for (j in c(2:l)) {
 D
 
 
-df.smart$smart_1_normalized <- cut(X[[i]] , breaks = D, 
-                     labels = c('0.25','0.5','0.75','1'), right = FALSE)
+df.smart$smart_1_normalized <- cut(X , breaks = D, 
+                     labels = c('0.5','0.75','1'), right = FALSE)
 
 
 km_fit <- survfit(Surv(time_day) ~ as.factor(smart_1_normalized), data=df.smart)
@@ -323,7 +266,7 @@ log_rang=survdiff(Surv(time_day) ~ as.factor(smart_1_normalized) , df.smart)
 Peto_test=survdiff(Surv(time_day) ~ as.factor(smart_1_normalized) , df.smart, rho = 1)
 
 #survdiff(Surv(time_day) ~ as.factor(smart_1_normalized), data=df.smart,rho = 1)
-
+'smart_1_normalized'
 Test_curv(log_rang,Peto_test)
 
 
@@ -348,12 +291,14 @@ i
 
 X=(df.smart[[i]])
 length(X)
+hist(X)
 Y= X[!is.na(X)]
 length(Y)
 X=sapply(X, function(x) ifelse(is.na(x),mean(Y),x ) )
 hist(X)
 
-D=quantile(X, prob=c(0,0.25,0.5,0.75,1))
+D=quantile(X, prob=c(0,0.75,1))
+D
 l=length(D[])
 for (i in c(2:l)) {
   D[i]<-0.00001+D[i]
@@ -362,7 +307,7 @@ D
 
 
 df.smart$smart_3_normalized <- cut(X , breaks = D, 
-                    labels = c('0.25','0.5','0.75','1')
+                    labels = c('0.75','1')
                     , right = FALSE)
 
 
@@ -372,6 +317,8 @@ km_fit <- survfit(Surv(time_day) ~ as.factor(smart_3_normalized), data=df.smart)
 
 autoplot(km_fit)
 
+
+#km_smart_1_skew
 #survdiff(Surv(time_day) ~ as.factor(smart_1_normalized_Q), data=df.smart)
 
 
@@ -409,12 +356,14 @@ i
 
 X=(df.smart[[i]])
 length(X)
+hist(X)
 Y= X[!is.na(X)]
 length(Y)
 X=sapply(X, function(x) ifelse(is.na(x),mean(Y),x ) )
 hist(X)
 
-D=quantile(X, prob=c(0,0.75,1))
+D=quantile(X, prob=c(0,0.2,1))
+D
 l=length(D[])
 for (i in c(2:l)) {
   D[i]<-0.00001+D[i]
@@ -423,7 +372,7 @@ D
 
 
 df.smart$smart_5_normalized <- cut(X , breaks = D, 
-                        labels = c('0.75','1')
+                        labels = c('0.20','1')
                         , right = FALSE)
 
 
@@ -432,7 +381,7 @@ km_fit <- survfit(Surv(time_day) ~ as.factor(smart_5_normalized), data=df.smart)
 
 autoplot(km_fit)
 
-survdiff(Surv(time_day) ~ as.factor(smart_5_normalized), data=df.smart, rho = 1)
+#survdiff(Surv(time_day) ~ as.factor(smart_5_normalized), data=df.smart, rho = 1)
 
 
 #Vewmos segun LogRank si las curvas son dif en el final
@@ -462,7 +411,7 @@ length(Y)
 X=sapply(X, function(x) ifelse(is.na(x),mean(Y),x ) )
 hist(X)
 
-D=quantile(X, prob=c(0,0.25,0.75,1))
+D=quantile(X, prob=c(0,0.80,1))
 l=length(D[])
 for (i in c(2:l)) {
   D[i]<-0.00001+D[i]
@@ -470,18 +419,18 @@ for (i in c(2:l)) {
 D
 
 #etiquetamos la particion
+
 df.smart$smart_7_normalized <- cut(X , breaks = D, 
-                        labels = c('0.25','0.75','1')
+                        labels = c('0.80','1')
                         , right = FALSE)
 
 
-  km_fit <- survfit(Surv(time_day) ~ as.factor(smart_7_normalized), data=df.smart)
+km_fit <- survfit(Surv(time_day) ~ as.factor(smart_7_normalized), data=df.smart)
 #summary(km_fit, time_day = c(1,30,60,90*(1:10)))
 
 autoplot(km_fit)
 
 # survdiff(Surv(time_day) ~ as.factor(smart_7_normalized), data=df.smart, rho = 1)
-
 
 #Vewmos segun LogRank si las curvas son dif en el final
 #With rho = 0 this is the log-rank 
@@ -508,7 +457,7 @@ length(Y)
 X=sapply(X, function(x) ifelse(is.na(x),mean(Y),x ) )
 hist(X)
 
-D=quantile(X, prob=c(0,0.75,1))
+D=quantile(X, prob=c(0,0.25,1))
 l=length(D[])
 for (i in c(2:l)) {
   D[i]<-0.00001+D[i]
@@ -518,7 +467,7 @@ D
 
 #etiquetamos la particion
 df.smart$smart_192_normalized <- cut(X , breaks = D, 
-                        labels = c('0.75','1')
+                        labels = c('0.25','1')
                         , right = FALSE)
 
 
@@ -555,7 +504,7 @@ length(Y)
 X=sapply(X, function(x) ifelse(is.na(x),mean(Y),x ) )
 hist(X)
 
-D=quantile(X, prob=c(0,0.25,0.75,1))
+D=quantile(X, prob=c(0,0.75,1))
 l=length(D[])
 for (i in c(2:l)) {
   D[i]<-0.00001+D[i]
@@ -565,7 +514,7 @@ D
 
 #etiquetamos la particion
 df.smart$smart_193_normalized <- cut(X , breaks = D, 
-                        labels = c('0.25','0.75','1')
+                        labels = c('0.75','1')
                         , right = FALSE)
 
 
@@ -601,7 +550,7 @@ length(Y)
 X=sapply(X, function(x) ifelse(is.na(x),mean(Y),x ) )
 hist(X)
 
-D=quantile(X, prob=c(0,0.25,0.75,1))
+D=quantile(X, prob=c(0,0.25,0.5,0.75,1))
 l=length(D[])
 for (i in c(2:l)) {
   D[i]<-0.00001+D[i]
@@ -611,7 +560,7 @@ D
 
 #etiquetamos la particion
 df.smart$smart_194_normalized <- cut(X , breaks = D, 
-                        labels = c('0.25','0.75','1')
+                        labels = c('0.25','0.5','0.75','1')
                         , right = FALSE)
 
 
@@ -647,7 +596,7 @@ length(Y)
 X=sapply(X, function(x) ifelse(is.na(x),mean(Y),x ) )
 hist(X)
 
-D=quantile(X, prob=c(0,0.75,1))
+D=quantile(X, prob=c(0,0.25,1))
 l=length(D[])
 for (i in c(2:l)) {
   D[i]<-0.00001+D[i]
@@ -657,7 +606,7 @@ D
 
 #etiquetamos la particion
 df.smart$smart_197_normalized <- cut(X , breaks = D, 
-                        labels = c('0.75','1')
+                        labels = c('0.25','1')
                         , right = FALSE)
 
 
@@ -699,7 +648,7 @@ X=sapply(X, function(x) ifelse(is.na(x),mean(Y),x ) )
 hist(X)
 
 #(0,0.25,0.75,1))
-D=quantile(X, prob=c(0,0.01,0.96,1))
+D=quantile(X, prob=c(0,0.25,1))
 l=length(D[])
 for (i in c(2:l)) {
   D[i]<-0.00001+D[i]
@@ -711,7 +660,7 @@ D
 
 #etiquetamos la particion
 df.smart$smart_198_normalized <- cut(X , breaks = D, 
-                        labels = c('0.01','0.96','1')
+                        labels = c('0.25','1')
                         , right = FALSE)
 
 
@@ -719,6 +668,9 @@ km_fit <- survfit(Surv(time_day) ~ as.factor(smart_198_normalized), data=df.smar
 #summary(km_fit, time_day = c(1,30,60,90*(1:10)))
 
 autoplot(km_fit)
+
+
++title(main = 'n')
 
 #survdiff(Surv(time_day) ~ as.factor(smart_198_normalized), data=df.smart, rho = 1)
 
@@ -735,4 +687,14 @@ Peto_test=survdiff(Surv(time_day) ~ as.factor(smart_198_normalized) , df.smart, 
 
 Test_curv(log_rang,Peto_test)
 
-write.csv(df.smart,file = "data_fact_smart_mean")
+df_skwews<-df.smart[,.(
+  time_day=time_day,
+  smart_3_normalized=smart_3_normalized,
+  smart_7_normalized=smart_7_normalized,
+  smart_193_normalized=smart_193_normalized
+)
+]
+
+
+
+write.csv(df.smart,file = "data_fact_skews.csv")
