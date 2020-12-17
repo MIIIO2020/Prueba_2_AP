@@ -32,6 +32,12 @@ Verosimilitud_wei<-logLik(modelo_wei)
 cat("El modelo que mejor se adapta a los datos es: ", ifelse (Verosimilitud_exp>Verosimilitud_wei, "el Exponencial","el Weibull"),"\n","Dado que tiene una verosimilitud mayor y equivalente a:",ifelse(Verosimilitud_exp>Verosimilitud_wei,Verosimilitud_exp,Verosimilitud_wei))
 
 # 2º Gráfico comparativo curvas entre los modelos
+## Exponencial tipo para graficar:
+S_exp<-survfit(Surv(predict(modelo_exp))~1, data=data)
+
+## Weibull
+S_wei<-survfit(Surv(predict(modelo_wei))~1, data=data)
+
 legenda = c("Kaplan Meier", "Cox", "Exponencial",
             "Weibull",'Lognormal','Gamma')#, 
 colores = c("black","orange", "green", "red",'blue','purple')#, 
@@ -129,10 +135,9 @@ ggplot(Com_Betas_f)+
   labs(title="Grafica de coeficientes variables categóricas")
 
 
-  #Dependiendo del modelo elegido, observar el comportamiento de las variables, a partir del riesgo relativo (HR)
-  #HR=exp(ß)
-
-#Interpretación de los resultados Weibull
+#Dependiendo del modelo elegido, observar el comportamiento de las variables, a partir del riesgo relativo (HR)
+#HR=exp(ß)
+#Interpretación de los resultados Weibull: en el documento.
 
 ### Parte III b ####
 #Modelo Lognormal
@@ -178,24 +183,6 @@ ggplot(km)+
   scale_y_continuous("Survival Probability", limits = c(0,1)) + 
   labs(title="Gráfica comparativa Kaplan Meier - Weibull")
 
-#Modelo seleccionado entre las partes a y b:
-### Generación de S(t) de weibull ####
-g<-modelo_wei$scale
-n=205
-t=data$time_day
-T=sapply(t, function(x) ifelse(is.na(x),0,x^g ) )
-lambda=(n/sum(T))^(1/g)
-
-S=exp(-(lambda*t)^g)
-plot(t,S)
-
-data_S=data.frame()
-data_S$S<-S
-data_S<-cbind(S,t)
-
-par(mfrow=c(2,1))
-ggplot(data=data_S,aes(t,S))+geom_step()
-autoplot(km)
 
 
 #Test general de comparación (entre curvas de sobrevivencia):
@@ -210,7 +197,9 @@ autoplot(km)
 #Ajustar un modelo de regresión de Cox:
 
 cox <- coxph(Surv(time_day)~ as.factor(model)  + as.factor(smart_3_f) + smart_5_normalized_mean + smart_7_normalized_mean + smart_192_normalized_mean  + smart_194_normalized_mean + smart_197_normalized_mean + smart_198_normalized_mean + smart_3_normalized_delta_skew + smart_7_normalized_delta_skew + smart_193_normalized_delta_skew,data = data)
+Verosimilitud_cox<-logLik(cox)
 S_cox <- survfit(cox)
+
 
 #Gráfico comparativo
 ## Kaplan-Meier estimator without grouping
@@ -236,13 +225,18 @@ ggplot(km)+
   scale_y_continuous("Survival Probability", limits = c(0,1)) + 
   labs(title="Gráfica comparativa")
 
+# "Desempate" entre decisión por el medio gráfico y métrico:
+# métrica AIC
+AIC(modelo_wei)
+AIC(cox)
+
 #Interpretación de los coeficientes de regresión
 ## Riesgo relativo HR = exp(ß)
 
 B_cox = cox$coefficients
 l=length(B_cox)
-B_cox_f = B_cox[2:5]
-B_cox_n = B_cox[6:l]
+B_cox_f = B_cox[1:4]
+B_cox_n = B_cox[5:l]
 
 #Gráfico variables numéricas
 Com_Betas<- data.frame(
@@ -255,16 +249,24 @@ Com_Betas$Coeficientes.del.modelo.Cox=sapply(
   Com_Betas$Coeficientes.del.modelo.Cox,
   function(x) ifelse(is.na(x),0,exp(x) ))
 
+Com_Betas$Coeficientes.del.modelo.weibull=sapply(
+  Com_Betas$Coeficientes.del.modelo.weibull,
+  function(x) ifelse(is.na(x),0,exp(x) ))
+
 ## Add legends
-legenda = c( "Cox")
-colores = c("orange")
+legenda = c( "Cox", "Weibull")
+colores = c("orange", "red")
 
 
 ggplot(Com_Betas)+
   geom_point(aes(Com_Betas$Coeficientes.del.modelo.Cox
                  ,Com_Betas$Nombre.de.los.coeficientes
                  ,colour = "Cox"))+
-  scale_colour_manual("", 
+  geom_point(aes(Com_Betas$Coeficientes.del.modelo.weibull
+                 ,Com_Betas$Nombre.de.los.coeficientes
+                 ,colour = "Weibull"))+
+  
+    scale_colour_manual("", 
                       breaks = legenda,
                       values =colores) +
   xlab("Tasa de riesgo") +
@@ -275,25 +277,68 @@ ggplot(Com_Betas)+
 Com_Betas_f<- data.frame(
   'Nombre de los coeficientes'=names(B_cox_f),
   'Coeficientes del modelo Cox'=unname(B_cox_f),
-  'Coeficientes del modelo weibull'=unname(B_wei_n)
+  'Coeficientes del modelo weibull'=unname(B_wei_f)
 )
 
 Com_Betas_f$Coeficientes.del.modelo.Cox=sapply(
   Com_Betas_f$Coeficientes.del.modelo.Cox,
+  function(x) ifelse(is.na(x),0,exp(x)**(-1)))
+
+Com_Betas_f$Coeficientes.del.modelo.weibull=sapply(
+  Com_Betas_f$Coeficientes.del.modelo.weibull,
   function(x) ifelse(is.na(x),0,exp(x)**(-1) ))
 
 ## Add legends
-legenda = c( "Cox")
-colores = c("orange")
+legenda = c( "Cox", "Weibull")
+colores = c("orange","red")
 
 ggplot(Com_Betas_f)+
   geom_point(aes(Com_Betas_f$Coeficientes.del.modelo.Cox
                  ,Com_Betas_f$Nombre.de.los.coeficientes
                  ,colour = "Cox"))+
+  geom_point(aes(Com_Betas_f$Coeficientes.del.modelo.weibull
+                 ,Com_Betas_f$Nombre.de.los.coeficientes
+                 ,colour = "Weibull"))+
+  
   scale_colour_manual("", 
                       breaks = legenda,
                       values =colores) +
   xlab("Tasa de riesgo") +
   ylab("Variables") + 
   labs(title="Grafica de coeficientes variables categóricas")
+
+#Gráfico variables categóricas con análisis cox -> exp(beta)
+Com_Betas_f<- data.frame(
+  'Nombre de los coeficientes'=names(B_cox_f),
+  'Coeficientes del modelo Cox'=unname(B_cox_f),
+  'Coeficientes del modelo weibull'=unname(B_wei_f)
+)
+
+Com_Betas_f$Coeficientes.del.modelo.Cox=sapply(
+  Com_Betas_f$Coeficientes.del.modelo.Cox,
+  function(x) ifelse(is.na(x),0,exp(x)))
+
+Com_Betas_f$Coeficientes.del.modelo.weibull=sapply(
+  Com_Betas_f$Coeficientes.del.modelo.weibull,
+  function(x) ifelse(is.na(x),0,exp(x)**(-1) ))
+
+## Add legends
+legenda = c( "Cox", "Weibull")
+colores = c("orange","red")
+
+ggplot(Com_Betas_f)+
+  geom_point(aes(Com_Betas_f$Coeficientes.del.modelo.Cox
+                 ,Com_Betas_f$Nombre.de.los.coeficientes
+                 ,colour = "Cox"))+
+  geom_point(aes(Com_Betas_f$Coeficientes.del.modelo.weibull
+                 ,Com_Betas_f$Nombre.de.los.coeficientes
+                 ,colour = "Weibull"))+
+  
+  scale_colour_manual("", 
+                      breaks = legenda,
+                      values =colores) +
+  xlab("Tasa de riesgo") +
+  ylab("Variables") + 
+  labs(title="Grafica de coeficientes variables categóricas")
+
 
