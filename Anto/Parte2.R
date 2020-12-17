@@ -1050,28 +1050,17 @@ X=sapply(X, function(x) ifelse(is.na(x),mean(Y),x ) )
 a[,i]=X
 }
 
+### Realizar los graficos log log ####
 
-km_skew_3 <- survfit(Surv(time_day)~ smart_3_normalized_delta_skew, data=df.smart)
+km_skew_3 <- survfit(Surv(time_day)~ skew_3_f
+                     , data=df.smart)
 
 
 plot(km_skew_3, col=c("black", "red","green" ,"cyan"),
      fun="cloglog") + title(main='Comparación de riesgos proporcionales',
       sub='km_skew_3', xlab = 'log(tiempo)' , ylab='log{-log(S)}')
 
-
-#i=skew7
-i=Colums_df[4]
-X=(df.smart[[i]])
-length(X)
-hist(X)
-Y= X[!is.na(X)]
-length(Y)
-X=sapply(X, function(x) ifelse(is.na(x),mean(Y),x ) )
-
-
-df.smart[,i]=X
-
-km_skew_7 <- survfit(Surv(time_day)~ smart_7_normalized_delta_skew, data=df.smart)
+km_skew_7 <- survfit(Surv(time_day)~ skew_7_f, data=df.smart)
 
 
 plot(km_skew_7, col=c("black", "red","green" ,"cyan","blue"), fun="cloglog") + title(main='Comparación de riesgos proporcionales',
@@ -1079,18 +1068,8 @@ plot(km_skew_7, col=c("black", "red","green" ,"cyan","blue"), fun="cloglog") + t
 
 
 #i=skew193
-i=Colums_df[6]
-X=(df.smart[[i]])
-length(X)
-hist(X)
-Y= X[!is.na(X)]
-length(Y)
-X=sapply(X, function(x) ifelse(is.na(x),mean(Y),x ) )
 
-
-df.smart[,i]=X
-
-km_skew_193 <- survfit(Surv(time_day)~ smart_193_normalized_delta_skew, data=df.smart)
+km_skew_193 <- survfit(Surv(time_day)~ skew_193_f, data=df.smart)
 
 
 plot(km_skew_193, col=c("black", "red","green" ,"cyan","blue"), fun="cloglog") + title(main='Comparación de riesgos proporcionales',
