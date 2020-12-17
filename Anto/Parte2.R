@@ -14,6 +14,16 @@ library(stats)
 #df=fread("/Users/antoniaindaorlandi/Desktop/Análisis Predictivo/Prueba 2/data_smart_mean_delta_skew.csv")
 df=fread("data/data_smart_mean_delta_skew.csv")
 
+
+
+### comienza parte 2 a y b ####
+
+  # En esta parte 2 a se estructuran
+  # las variables como tipo categorica.
+  # Ademas se plotean los km y se calculan
+  # los test de diferencias entre curvas
+
+
 ### KM ####
 
   #S(t) general
@@ -1002,7 +1012,7 @@ df.smart$Categoric=NULL
 rm(i,j,l,X,Y,D,Colums_df,km_fit,log_rang,Peto_test)
 #____________________________________________________
 
-#write.csv(df.smart,file = "data_fact_skews.csv")
+
 
 ### eliminación de los skews que no se usarán####
 
@@ -1050,7 +1060,7 @@ X=sapply(X, function(x) ifelse(is.na(x),mean(Y),x ) )
 a[,i]=X
 }
 
-### Realizar los graficos log log ####
+### Realizar los graficos log log  para los skews####
 
 km_skew_3 <- survfit(Surv(time_day)~ skew_3_f
                      , data=df.smart)
@@ -1077,4 +1087,137 @@ plot(km_skew_193, col=c("black", "red","green" ,"cyan","blue"), fun="cloglog") +
 
 
 write.csv(df.smart,file = "data_smart_skew.csv")
+
+### Aquí comienza otro codigo  Parte 2####
+  #utilizado para apreciar de nuevo
+  #Las curvas de Km y visualizar las graficas
+  #de loglog
+
+data<-fread("data_smart_skew.csv")
+
+data<-rename(data,model=model_Bin)
+
+data$V1<-NULL
+
+
+### Parte II a ####
+#Análisis bivariado con el tiempo de vida
+#Función de sobrevivencia vía Kaplan-Meier
+
+#model
+km_m <- survfit(Surv(time_day)~ as.factor(model), data=data)
+
+autoplot(km_m)
+
+#smart_1_normalized_mean
+km_1 <- survfit(Surv(time_day)~as.factor(smart_1_f), data=data)
+
+autoplot(km_1)
+
+#smart_3_normalized_mean
+km_3 <- survfit(Surv(time_day)~as.factor(smart_3_f), data=data)
+
+autoplot(km_3)
+
+#smart_5_normalized_mean
+km_5 <- survfit(Surv(time_day)~as.factor(smart_5_f), data=data)
+
+autoplot(km_5)
+
+#smart_7_normalized_mean
+km_7 <- survfit(Surv(time_day)~as.factor(smart_7_f), data=data)
+
+autoplot(km_7)
+
+#smart_192_normalized_mean
+km_192 <- survfit(Surv(time_day)~as.factor(smart_192_f), data=data)
+
+autoplot(km_192)
+
+#smart_193_normalized_mean
+km_193 <- survfit(Surv(time_day)~as.factor(smart_193_f), data=data)
+
+autoplot(km_193)
+
+#smart_194_normalized_mean
+km_194 <- survfit(Surv(time_day)~as.factor(smart_194_f), data=data)
+
+autoplot(km_194)
+
+#smart_197_normalized_mean
+km_197 <- survfit(Surv(time_day)~as.factor(smart_197_f), data=data)
+
+autoplot(km_197)
+
+#smart_198_normalized_mean
+km_198 <- survfit(Surv(time_day)~as.factor(smart_198_f), data=data)
+
+autoplot(km_198)
+
+
+### Parte II b ####
+#Test de comparación entre curvas
+#Test Log-rank: para detectar diferencias al final de la curva (compara curvas de dos grupos… buscar test génerico para más de dos curvas)
+#Test de Wilcoxon: para detectar diferencias al inicio de la curva
+
+### Parte II c ####
+#Inspección gráfica del supuesto de riesgos proporcionales
+#Método 1: log{-log(S)} vs log(t)
+
+# col=c("black", "red","green" ,"cyan")
+
+plot(km_1, col=c("black", "red","green" ,"cyan"), fun="cloglog")
+title(main='Comparación de riesgos proporcionales',
+      sub='Smart_1_normalized_mean',
+      xlab = 'log(tiempo)' , ylab='log{-log(S)}')
+
+
+plot(km_3, col=c("black", "red","green" ,"cyan"), fun="cloglog")+
+  title(main='Comparación de riesgos proporcionales',
+        sub='Smart_3_normalized_mean',
+        xlab = 'log(tiempo)' , ylab='log{-log(S)}')
+
+
+plot(km_5, col=c("black", "red"), fun="cloglog")+
+  title(main='Comparación de riesgos proporcionales',
+        sub='Smart_5_normalized_mean',
+        xlab = 'log(tiempo)' , ylab='log{-log(S)}')
+
+plot(km_7, col=c("black", "red","green" ), fun="cloglog")
+title(main='Comparación de riesgos proporcionales',
+      sub='Smart_7_normalized_mean',
+      xlab = 'log(tiempo)' , ylab='log{-log(S)}')
+
+
+plot(km_192, col=c("black", "red"), fun="cloglog")+
+  title(main='Comparación de riesgos proporcionales',
+        sub='Smart_192_normalized_mean',
+        xlab = 'log(tiempo)' , ylab='log{-log(S)}')
+
+
+plot(km_193, col=c("black", "red","green" ,"cyan"), fun="cloglog")
+title(main='Comparación de riesgos proporcionales',
+      sub='Smart_193_normalized_mean',
+      xlab = 'log(tiempo)' , ylab='log{-log(S)}')
+
+
+plot(km_194, col=c("black", "red","green" ,"cyan"), fun="cloglog")+
+  title(main='Comparación de riesgos proporcionales',
+        sub='Smart_194_normalized_mean',
+        xlab = 'log(tiempo)' , ylab='log{-log(S)}')
+
+
+plot(km_197, col=c("black", "red","green" ,"cyan"), fun="cloglog")+
+  title(main='Comparación de riesgos proporcionales',
+        sub='Smart_197_normalized_mean',
+        xlab = 'log(tiempo)' , ylab='log{-log(S)}')
+
+
+plot(km_198, col=c("black", "red","green" ,"cyan"), fun="cloglog")+
+  title(main='Comparación de riesgos proporcionales',
+        sub='Smart_198_normalized_mean',
+        xlab = 'log(tiempo)' , ylab='log{-log(S)}')
+
+plot(km_m, col=c("black", "red","green" ,"cyan"), fun="cloglog")+
+  title(main='Comparación de riesgos proporcionales', sub='Model', xlab = 'log(tiempo)' , ylab='log{-log(S)}')
 
