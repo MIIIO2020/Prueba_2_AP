@@ -6,78 +6,144 @@ library(ggplot2)
 library(dplyr)
 library(ggfortify)
 library(rms)
-library(Hmisc) #Cosas rolf
-library(remotes) #Cosas rolf
+library(Hmisc) 
+library(remotes) 
 
-#data
+#Lectura de los datos
 data<-fread("/Users/antoniaindaorlandi/Desktop/Análisis Predictivo/Prueba 2/data_smart_skew.csv")
 data<-rename(data,model=model_Bin)
 
 ### Parte III a ####
 #Modelo exponencial 
-modelo_exp<-survreg(Surv(time_day) ~ as.factor(model)  + as.factor(smart_3_f) + smart_5_f + smart_7_f + smart_192_f  + smart_194_f + smart_197_f + smart_198_f + smart_3_normalized_delta_skew + smart_7_normalized_delta_skew + smart_193_normalized_delta_skew, data, dist='exponential') #Después de la "colita de chancho" agregar todas las variables…
+modelo_exp<-survreg(Surv(time_day) ~ as.factor(model)  + as.factor(smart_3_f) + smart_5_normalized_mean + smart_7_normalized_mean + smart_192_normalized_mean  + smart_194_normalized_mean + smart_197_normalized_mean + smart_198_normalized_mean + smart_3_normalized_delta_skew + smart_7_normalized_delta_skew + smart_193_normalized_delta_skew, data, dist='exponential') #Después de la "colita de chancho" agregar todas las variables…
 modelo_exp
 #modelo_exp<-survreg(Surv(time_day) ~ as.factor(model) + as.factor(smart_1_f) + as.factor(smart_3_f) + as.factor(smart_5_f) + as.factor(smart_7_f) + as.factor(smart_192_f) + as.factor(smart_193_f) + as.factor(smart_194_f) + as.factor(smart_197_f) + as.factor(smart_198_f)+ smart_3_normalized_delta_skew + smart_7_normalized_delta_skew + smart_193_normalized_delta_skew, data, dist='exponential') #Después de la "colita de chancho" agregar todas las variables…
 Verosimilitud_exp<-logLik(modelo_exp)
 
 
 #Modelo weibull
-modelo_wei<-survreg(Surv(time_day) ~ as.factor(model)  + as.factor(smart_3_f) + smart_5_f + smart_7_f + smart_192_f  + smart_194_f + smart_197_f + smart_198_f + smart_3_normalized_delta_skew + smart_7_normalized_delta_skew + smart_193_normalized_delta_skew, data, dist='weibull') #Después de la "colita de chancho" agregar todas las variables…
+modelo_wei<-survreg(Surv(time_day) ~ as.factor(model)  + as.factor(smart_3_f) + smart_5_normalized_mean + smart_7_normalized_mean + smart_192_normalized_mean  + smart_194_normalized_mean + smart_197_normalized_mean + smart_198_normalized_mean + smart_3_normalized_delta_skew + smart_7_normalized_delta_skew + smart_193_normalized_delta_skew, data, dist='weibull') #Después de la "colita de chancho" agregar todas las variables…
 modelo_wei
 Verosimilitud_wei<-logLik(modelo_wei)
 
 
 #Para comparar cuál es el mejor modelo: analizar la verosimilitud
-#LogLikelihood…
+# 1ª LogLikelihood:
 cat("El modelo que mejor se adapta a los datos es: ", ifelse (Verosimilitud_exp>Verosimilitud_wei, "el Exponencial","el Weibull"),"\n","Dado que tiene una verosimilitud mayor y equivalente a:",ifelse(Verosimilitud_exp>Verosimilitud_wei,Verosimilitud_exp,Verosimilitud_wei))
-  
+
+# 2º Gráfico comparativo curvas entre los modelos
+legenda = c("Kaplan Meier", "Cox", "Exponencial",
+            "Weibull",'Lognormal','Gamma')#, 
+colores = c("black","orange", "green", "red",'blue','purple')#, 
+
+ggplot(S_exp)+
+  geom_step(aes(S_exp$time,S_exp$surv,colour = "Exponencial"))+
+  geom_line(data=S_wei,aes(x = S_wei$time,
+                           y = S_wei$surv,colour = "Weibull" ))+
+  scale_colour_manual("", 
+                      breaks = legenda,
+                      values =colores) +
+  xlab("Tiempo en días") +
+  scale_y_continuous("Survival Probability", limits = c(0,1)) + 
+  labs(title="Gráfica comparativa")
+
+
 #Interprete los resultados del modelo:
+# 1ª Comparación de los betas de cada modelo para las diferentes variables
+#Separación de los beta entre variables numéricas y categóricas
+B_exp=modelo_exp$coefficients
+l=length(B_exp)
+B_exp_f = B_exp[2:5]
+B_exp_n = B_exp[6:l]
+
+B_wei=modelo_wei$coefficients
+l=length(B_wei)
+B_wei_f = B_wei[2:5]
+B_wei_n = B_wei[6:l]
+
+#Gráfico variables numéricas
+Com_Betas<- data.frame(
+  'Nombre de los coeficientes'=names(B_exp_n),
+  'Coeficientes del modelo exponencial'=unname(B_exp_n),
+  'Coeficientes del modelo weibull'=unname(B_wei_n)
+)
+
+Com_Betas$Coeficientes.del.modelo.exponencial=sapply(
+  Com_Betas$Coeficientes.del.modelo.exponencial,
+  function(x) ifelse(is.na(x),0,exp(x) ))
+
+Com_Betas$Coeficientes.del.modelo.weibull=sapply(
+  Com_Betas$Coeficientes.del.modelo.weibull,
+  function(x) ifelse(is.na(x),0,exp(x) ))
+
+## Add legends
+legenda = c( "Exponencial", "Weibull")
+colores = c("green", "red")
+
+
+ggplot(Com_Betas)+
+  geom_point(aes(Com_Betas$Coeficientes.del.modelo.exponencial
+                 ,Com_Betas$Nombre.de.los.coeficientes
+                 ,colour = "Exponencial"))+
+  geom_point(aes(Com_Betas$Coeficientes.del.modelo.weibull
+                 ,Com_Betas$Nombre.de.los.coeficientes
+                 ,colour = "Weibull"))+
+  scale_colour_manual("", 
+                      breaks = legenda,
+                      values =colores) +
+  xlab("Tasa de riesgo") +
+  ylab("Variables") + 
+  labs(title="Grafica de coeficientes variables numéricas")
+
+#Gráfico variables categóricas
+Com_Betas_f<- data.frame(
+  'Nombre de los coeficientes'=names(B_exp_f),
+  'Coeficientes del modelo exponencial'=unname(B_exp_f),
+  'Coeficientes del modelo weibull'=unname(B_wei_f)
+)
+
+Com_Betas_f$Coeficientes.del.modelo.exponencial=sapply(
+  Com_Betas_f$Coeficientes.del.modelo.exponencial,
+  function(x) ifelse(is.na(x),0,exp(x)**(-1) ))
+
+Com_Betas_f$Coeficientes.del.modelo.weibull=sapply(
+  Com_Betas_f$Coeficientes.del.modelo.weibull,
+  function(x) ifelse(is.na(x),0,exp(x)**(-1) ))
+
+## Add legends
+legenda = c( "Exponencial", "Weibull")
+colores = c("green", "red")
+
+ggplot(Com_Betas_f)+
+  geom_point(aes(Com_Betas_f$Coeficientes.del.modelo.exponencial
+                 ,Com_Betas_f$Nombre.de.los.coeficientes
+                 ,colour = "Exponencial"))+
+  geom_point(aes(Com_Betas_f$Coeficientes.del.modelo.weibull
+                 ,Com_Betas_f$Nombre.de.los.coeficientes
+                 ,colour = "Weibull"))+
+  scale_colour_manual("", 
+                      breaks = legenda,
+                      values =colores) +
+  xlab("Tasa de riesgo") +
+  ylab("Variables") + 
+  labs(title="Grafica de coeficientes variables categóricas")
+
+
   #Dependiendo del modelo elegido, observar el comportamiento de las variables, a partir del riesgo relativo (HR)
   #HR=exp(ß)
 
-#Interpretación por varibale
-#model (ST40000DM000 y OTHER)
-
-
-#smart_1_normalized (0.5 , 0.75 , 1)
-#Cuartil de referencia …
-
-
-#smart_3_normalized (0.25 , 0.5 , 0.75 , 1)
-
-
-#smart_5_normalized (0.25 , 0.5 , 0.75 , 1)
-
-
-#smart_7_normalized (0.25 , 0.75 , 1)
-
-
-#smart_192_normalized
-
-
-#smart_193_normalized
-
-
-#smart_194_normalized
-
-
-#smart_197_normalized
-
-
-#smart_198_normalized
-
-
+#Interpretación de los resultados Weibull
 
 ### Parte III b ####
 #Modelo Lognormal
-modelo_logn<-survreg(Surv(time_day) ~ as.factor(model)  + as.factor(smart_3_f) + smart_5_f + smart_7_f + smart_192_f  + smart_194_f + smart_197_f + smart_198_f + smart_3_normalized_delta_skew + smart_7_normalized_delta_skew + smart_193_normalized_delta_skew, data, dist='lognormal') #Después de la "colita de chancho" agregar todas las variables…
+modelo_logn<-survreg(Surv(time_day) ~ as.factor(model)  + as.factor(smart_3_f) + smart_5_normalized_mean + smart_7_normalized_mean + smart_192_normalized_mean  + smart_194_normalized_mean + smart_197_normalized_mean + smart_198_normalized_mean + smart_3_normalized_delta_skew + smart_7_normalized_delta_skew + smart_193_normalized_delta_skew, data, dist='lognormal') #Después de la "colita de chancho" agregar todas las variables…
 modelo_logn
 Verosimilitud_logn<-logLik(modelo_logn)
 
 #Modelo Gamma #Después de la "colita de chancho" agregar todas las variables…
 #modelo_gam<-survreg(Surv(time_day) ~ as.factor(model), data, dist='gamma') #No existe gamma … ver como generar este modelo
 
-modelo_gamma<-flexsurvreg(Surv(time_day)~ as.factor(model)  + as.factor(smart_3_f) + smart_5_f + smart_7_f + smart_192_f  + smart_194_f + smart_197_f + smart_198_f + smart_3_normalized_delta_skew + smart_7_normalized_delta_skew + smart_193_normalized_delta_skew,data=data,dist='gamma')
+modelo_gamma<-flexsurvreg(Surv(time_day)~ as.factor(model)  + as.factor(smart_3_f) + smart_5_normalized_mean + smart_7_normalized_mean + smart_192_normalized_mean  + smart_194_normalized_mean + smart_197_normalized_mean + smart_198_normalized_mean + smart_3_normalized_delta_skew + smart_7_normalized_delta_skew + smart_193_normalized_delta_skew,data=data,dist='gamma')
 modelo_gamma
 Verosimilitud_gamma<-logLik(modelo_gamma)
 #Error en gamma variables correlacionadas
@@ -95,8 +161,22 @@ cat("El modelo que mejor se adapta a los datos es el: ",Modelos[Indice],"\n", "C
 ### Parte III c ####
 #Insertar modelo Kaplan-Meier:
 km <- survfit(Surv(time_day)~ 1, data=data)
-autoplot(km)
 
+
+legenda = c("Kaplan Meier", "Cox", "Exponencial",
+            "Weibull",'Lognormal','Gamma')#, 
+colores = c("black","orange", "green", "red",'blue','purple')#, 
+
+ggplot(km)+
+  geom_step(aes(km$time,km$surv,colour = "Kaplan Meier"))+
+  geom_line(data=S_wei,aes(x = S_wei$time,
+                           y = S_wei$surv,colour = "Weibull" ))+
+  scale_colour_manual("", 
+                      breaks = legenda,
+                      values =colores) +
+  xlab("Tiempo en días") +
+  scale_y_continuous("Survival Probability", limits = c(0,1)) + 
+  labs(title="Gráfica comparativa Kaplan Meier - Weibull")
 
 #Modelo seleccionado entre las partes a y b:
 ### Generación de S(t) de weibull ####
@@ -128,48 +208,92 @@ autoplot(km)
 
 #Parte III d (Elegimos paso 2º opción 2)
 #Ajustar un modelo de regresión de Cox:
-#Cox<-lm()
 
-#1º Estimación de los coeficientes ß: máxima verosimilitud (¿Del modelo elegido en los pasos anteriores?)
+cox <- coxph(Surv(time_day)~ as.factor(model)  + as.factor(smart_3_f) + smart_5_normalized_mean + smart_7_normalized_mean + smart_192_normalized_mean  + smart_194_normalized_mean + smart_197_normalized_mean + smart_198_normalized_mean + smart_3_normalized_delta_skew + smart_7_normalized_delta_skew + smart_193_normalized_delta_skew,data = data)
+S_cox <- survfit(cox)
 
-#2º (OPCIÓN 1) Test de la razón de verosimilitud (TRV): probar Ho
-#Generar modelo basal y compararlo con un modelo basal + variable de estudio (factor ß) para probar su significancia ("Análisis de deviance")
-
-#2º (OPCIÓN 2)Selección de variables: método ¿Stepwise?
-#full<-lm(time_day~., data=data)
-#null<-lm(time_day~1, data=data)
-#modelo_cox<-step(null, scope = list(upper=full), data=model_data, direction="both")
-#summary(modelo_cox)
-
-
-
+#Gráfico comparativo
 ## Kaplan-Meier estimator without grouping
-
 km <- survfit(Surv(time_day)~ 1, data=data)
 
-#km <- survfit(data = lung, SurvObj ~ 1)
-#autoplot(km)
-plot(data$time_day,km)
-## Overplot estimation from Cox regression by Efron method
-cox <- coxph(Surv(time_day)~ as.factor(model)  + as.factor(smart_3_f) + smart_5_f + smart_7_f + smart_192_f  + smart_194_f + smart_197_f + smart_198_f + smart_3_normalized_delta_skew + smart_7_normalized_delta_skew + smart_193_normalized_delta_skew,data = data)
-lines(cox, col = "green")
+## Weibull
+S_wei<-survfit(Surv(predict(modelo_wei))~1, data=data)
 
-## Parametric estimation with Weibull distribution
-#weibull.null <- survreg(data = lung, SurvObj ~ 1, dist = "weibull")
-#lines(x = predict(modelo_wei, type = "quantile", p = seq(0.01, 0.99, by=.01))[1,], y = rev(seq(0.01, 0.99, by = 0.01)),col = "red")
-lines(x=predict(modelo_exp), col="blue")
-lines(x=predict(modelo_wei), col="red")
-
-## Parametric estimation with log-logistic distribution
-#loglogistic.null <- survreg(data = lung, SurvObj ~ 1, dist = "loglogistic")
-#lines(x = predict(modelo_logn, type = "quantile", p = seq(0.01, 0.99, by=.01))[1,],y = rev(seq(0.01, 0.99, by = 0.01)),col = "blue")
-lines(x=predict(modelo_logn), col="orange")
-
-lines(x=predict(modelo_gamma), col="brown")
 ## Add legends
-legend(x = "topright",
-       legend = c("Kaplan-Meier", "Cox", "Weibull", "Log normal"),
-       lwd = 2, bty = "n",
-       col = c("black", "green", "red", "blue"))
+legenda = c("Kaplan Meier", "Cox", "Exponencial",
+            "Weibull",'Lognormal','Gamma')#, "Log normal"
+colores = c("black","orange", "green", "red",'blue','purple')#, "blue"
 
+ggplot(km)+
+  geom_step(aes(km$time,km$surv,colour = "Kaplan Meier"))+
+  geom_line(data = S_cox, aes(S_cox$time, S_cox$surv, colour="Cox"))+
+  geom_line(data=S_wei,aes(x = S_wei$time,
+                           y = S_wei$surv,colour = "Weibull" ))+
+  scale_colour_manual("", 
+                      breaks = legenda,
+                      values =colores) +
+  xlab("Tiempo en días") +
+  scale_y_continuous("Survival Probability", limits = c(0,1)) + 
+  labs(title="Gráfica comparativa")
+
+#Interpretación de los coeficientes de regresión
+## Riesgo relativo HR = exp(ß)
+
+B_cox = cox$coefficients
+l=length(B_cox)
+B_cox_f = B_cox[2:5]
+B_cox_n = B_cox[6:l]
+
+#Gráfico variables numéricas
+Com_Betas<- data.frame(
+  'Nombre de los coeficientes'=names(B_cox_n),
+  'Coeficientes del modelo Cox'=unname(B_cox_n),
+  'Coeficientes del modelo weibull'=unname(B_wei_n)
+)
+
+Com_Betas$Coeficientes.del.modelo.Cox=sapply(
+  Com_Betas$Coeficientes.del.modelo.Cox,
+  function(x) ifelse(is.na(x),0,exp(x) ))
+
+## Add legends
+legenda = c( "Cox")
+colores = c("orange")
+
+
+ggplot(Com_Betas)+
+  geom_point(aes(Com_Betas$Coeficientes.del.modelo.Cox
+                 ,Com_Betas$Nombre.de.los.coeficientes
+                 ,colour = "Cox"))+
+  scale_colour_manual("", 
+                      breaks = legenda,
+                      values =colores) +
+  xlab("Tasa de riesgo") +
+  ylab("Variables") + 
+  labs(title="Grafica de coeficientes variables numéricas")
+
+#Gráfico variables categóricas
+Com_Betas_f<- data.frame(
+  'Nombre de los coeficientes'=names(B_cox_f),
+  'Coeficientes del modelo Cox'=unname(B_cox_f),
+  'Coeficientes del modelo weibull'=unname(B_wei_n)
+)
+
+Com_Betas_f$Coeficientes.del.modelo.Cox=sapply(
+  Com_Betas_f$Coeficientes.del.modelo.Cox,
+  function(x) ifelse(is.na(x),0,exp(x)**(-1) ))
+
+## Add legends
+legenda = c( "Cox")
+colores = c("orange")
+
+ggplot(Com_Betas_f)+
+  geom_point(aes(Com_Betas_f$Coeficientes.del.modelo.Cox
+                 ,Com_Betas_f$Nombre.de.los.coeficientes
+                 ,colour = "Cox"))+
+  scale_colour_manual("", 
+                      breaks = legenda,
+                      values =colores) +
+  xlab("Tasa de riesgo") +
+  ylab("Variables") + 
+  labs(title="Grafica de coeficientes variables categóricas")
 
